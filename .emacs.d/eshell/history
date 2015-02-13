@@ -9,3 +9,15 @@ bash
 !
 /bin/bash
 exit
+cd /home/fedorov/
+mkdir org
+cd org
+chmod +x emacs-run.sh 
+./emacs-run.sh 
+./emacs-run.sh "c:\1.java"
+./emacs-run.sh "c:\1.java"
+./emacs-run.sh "c:\1.java"
+./emacs-run.sh c:\1.java
+./emacs-run.sh c:\1.java c:\2.jav
+./emacs-run.sh c:\1.java c:\2.java
+./emacs-run.sh c:\1.java c:\2.java
