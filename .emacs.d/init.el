@@ -15,7 +15,8 @@
 		     evil
 		     goto-chg
 		     monokai-theme
-		     undo-tree))
+		     undo-tree
+		     ace-jump-mode))
 
 (defun ensure-package-installed (&rest packages)
   "Assure every package is installed, ask for installation if it’s not.
@@ -45,6 +46,27 @@ Return a list of installed packages or nil for every skipped package."
 ;;; evil mode by default
 (require 'evil)
 (evil-mode t)
+
+;;; ace jump mode
+(require 'ace-jump-mode)
+(define-key global-map (kbd "C-;") 'ace-jump-mode)
+;; evil-mode+ace-jump-mode bindings
+(define-key evil-motion-state-map (kbd "C-;") #'evil-ace-jump-char-mode)
+(define-key evil-motion-state-map (kbd "C-SPC") #'evil-ace-jump-word-mode)
+ 
+(define-key evil-operator-state-map (kbd "C-;") #'evil-ace-jump-char-mode) ; similar to f
+(define-key evil-operator-state-map (kbd "C-SPC") #'evil-ace-jump-char-to-mode) ; similar to t
+(define-key evil-operator-state-map (kbd "M-SPC") #'evil-ace-jump-word-mode)
+ 
+;; different jumps for different visual modes
+(defadvice evil-visual-line (before spc-for-line-jump activate)
+(define-key evil-motion-state-map (kbd "C-;") #'evil-ace-jump-line-mode))
+ 
+(defadvice evil-visual-char (before spc-for-char-jump activate)
+(define-key evil-motion-state-map (kbd "C-;") #'evil-ace-jump-char-mode))
+ 
+(defadvice evil-visual-block (before spc-for-char-jump activate)
+(define-key evil-motion-state-map (kbd "C-;") #'evil-ace-jump-char-mode)) 
 
 ;;; custom color theme
 (require 'color-theme-sanityinc-tomorrow)

@@ -1,0 +1,18 @@
+[submodule ".vim/bundle/dbext"]
+	path = .vim/bundle/dbext
+	url = https://github.com/vim-scripts/dbext.vim
+[submodule ".vim/bundle/nerdtree"]
+	path = .vim/bundle/nerdtree
+	url = https://github.com/scrooloose/nerdtree
+[submodule ".vim/bundle/syntastic"]
+	path = .vim/bundle/syntastic
+	url = https://github.com/scrooloose/syntastic.git
+[submodule ".vim/bundle/vim-airline"]
+	path = .vim/bundle/airline
+	url = https://github.com/bling/vim-airline
+[submodule ".vim/bundle/vim-sensible"]
+	path = .vim/bundle/sensible
+	url = https://github.com/tpope/vim-sensible.git
+[submodule ".emacs.d/ace-jump-mode"]
+	path = .emacs.d/ace-jump-mode
+	url = https://github.com/winterTTr/ace-jump-mode.git
