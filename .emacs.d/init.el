@@ -20,7 +20,8 @@
 		     ace-jump-mode
 		     cider
 		     clojure-mode
-		     auto-complete))
+		     auto-complete
+                     nyan-mode))
 
 (defun ensure-package-installed (&rest packages)
   "Assure every package is installed, ask for installation if it's not.
@@ -113,6 +114,13 @@ Return a list of installed packages or nil for every skipped package."
 (setq-default indent-tabs-mode nil)
 (setq-default whitespace-style '(tabs spaces trailing lines space-before-tab newline indentation:space empty space-after-tab space-mark tab-mark newline-mark))
 
+;;; nyan mode
+(if window-system
+    (progn
+      (nyan-mode t)
+      (setq nyan-wavy-trail t)
+      (nyan-start-animation)))
+
 ;;; added automatically
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -124,7 +132,15 @@ Return a list of installed packages or nil for every skipped package."
    (quote
     ("628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" "4e262566c3d57706c70e403d440146a5440de056dfaeb3062f004da1711d83fc" default)))
  '(inhibit-startup-screen t)
- '(org-agenda-files (quote ("~/org/main.org"))))
+ '(org-agenda-files (quote ("~/org/main.org")))
+ '(sql-connection-alist
+   (quote
+    (("pg_beirut_trunk"
+      (sql-product
+       (quote postgres))
+      (sql-user "root")
+      (sql-database "taxi_beirut")
+      (sql-server "localhost"))))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
