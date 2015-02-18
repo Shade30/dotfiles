@@ -16,7 +16,7 @@
 		     goto-chg
 		     monokai-theme
 		     undo-tree
-         smooth-scrolling
+                     smooth-scrolling
 		     ace-jump-mode
 		     cider
 		     clojure-mode
