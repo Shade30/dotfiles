@@ -39,9 +39,6 @@
 # Use case-insensitive filename globbing
 # shopt -s nocaseglob
 #
-# Make bash append rather than overwrite the history on disk
-shopt -s histappend
-#
 # When changing directory small typos can be ignored by bash
 # for example, cd /vr/lgo/apaache would find /var/log/apache
 # shopt -s cdspell
@@ -76,6 +73,55 @@ shopt -s histappend
 #
 # Whenever displaying the prompt, write the previous line to disk
 # export PROMPT_COMMAND="history -a"
+if [ "$PS1" ]; then
+
+    # Bash eternal history
+    # --------------------
+    # This snippet allows infinite recording of every command you've ever
+    # entered on the machine, without using a large HISTFILESIZE variable,
+    # and keeps track if you have multiple screens and ssh sessions into the
+    # same machine. It is adapted from:
+    # http://www.debian-administration.org/articles/543.
+    #
+    # The way it works is that after each command is executed and
+    # before a prompt is displayed, a line with the last command (and
+    # some metadata) is appended to ~/.bash_eternal_history.
+    #
+    # This file is a tab-delimited, timestamped file, with the following
+    # columns:
+    #
+    # 1) user
+    # 2) hostname
+    # 3) screen window (in case you are using GNU screen)
+    # 4) date/time
+    # 5) current working directory (to see where a command was executed)
+    # 6) the last command you executed
+    #
+    # The only minor bug: if you include a literal newline or tab (e.g. with
+    # awk -F"\t"), then that will be included verbatime. It is possible to
+    # define a bash function which escapes the string before writing it; if you
+    # have a fix for that which doesn't slow the command down, please submit
+    # a patch or pull request.
+    PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND ; }"'echo -e $$\\t$USER\\t$HOSTNAME\\tscreen $WINDOW\\t`date +%D%t%T%t%Y%t%s`\\t$PWD"$(history 1)" >> ~/.bash_eternal_history'
+    # Turn on checkwinsize
+    shopt -s checkwinsize
+
+    #Prompt edited from default
+    [ "$PS1" = "\\s-\\v\\\$ " ] && PS1="[\u \w]\\$ "
+
+    if [ "x$SHLVL" != "x1" ]; then # We're not a login shell
+	for i in /etc/profile.d/*.sh; do
+	    if [ -r "$i" ]; then
+		. $i
+	    fi
+	done
+    fi
+fi
+
+# Append to history
+# Make bash append rather than overwrite the history on disk
+# See: http://www.tldp.org/HOWTO/Bash-Prompt-HOWTO/x329.html
+shopt -s histappend
 
 # Aliases
 #
@@ -91,21 +137,23 @@ shopt -s histappend
 # \rm will call the real rm not the alias.
 #
 # Interactive operation...
-# alias rm='rm -i'
-# alias cp='cp -i'
-# alias mv='mv -i'
-#
+alias rm='rm -i'
+alias cp='cp -i'
+alias mv='mv -i'
+set -o noclobber
+
 # Default to human readable figures
 alias df='df -h'
 alias du='du -h'
-#
+
 # Misc :)
 alias less='less -r'                          # raw control characters
 alias whence='type -a'                        # where, of a sort
 alias grep='grep --color'                     # show differences in colour
 alias egrep='egrep --color=auto'              # show differences in colour
 alias fgrep='fgrep --color=auto'              # show differences in colour
-#
+export GREP_COLOR='1;31'; # green for matches
+
 # Some shortcuts for different directory listings
 alias ls='ls -hF --color=tty'                 # classify files in colour
 alias dir='ls --color=auto --format=vertical'
@@ -126,6 +174,19 @@ PATH="$PATH:/usr/local/bin:/usr/bin/"
 # umask 027
 # Paranoid: neither group nor others have any perms:
 # umask 077
+# From the MOOC:
+# If the group name is the same as the username OR the user id is not
+# greater than 99 (i.e. not root or a privileged user), then we are on a
+# local machine (check for yourself), so we set umask 002.
+#
+# Conversely, if the default group name is *different* from the username
+# AND the user id is greater than 99, we're on the server, and set umask
+# 022 for easy collaborative editing.
+if [ "`id -gn`" == "`id -un`" -a `id -u` -gt 99 ]; then
+    umask 002
+else
+    umask 022
+fi
 
 # Functions
 #

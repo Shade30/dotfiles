@@ -16,10 +16,14 @@
 		     goto-chg
 		     monokai-theme
 		     undo-tree
-		     ace-jump-mode))
+         smooth-scrolling
+		     ace-jump-mode
+		     cider
+		     clojure-mode
+		     auto-complete))
 
 (defun ensure-package-installed (&rest packages)
-  "Assure every package is installed, ask for installation if it’s not.
+  "Assure every package is installed, ask for installation if it's not.
 
 Return a list of installed packages or nil for every skipped package."
   (mapcar
@@ -53,20 +57,20 @@ Return a list of installed packages or nil for every skipped package."
 ;; evil-mode+ace-jump-mode bindings
 (define-key evil-motion-state-map (kbd "C-;") #'evil-ace-jump-char-mode)
 (define-key evil-motion-state-map (kbd "C-SPC") #'evil-ace-jump-word-mode)
- 
+
 (define-key evil-operator-state-map (kbd "C-;") #'evil-ace-jump-char-mode) ; similar to f
 (define-key evil-operator-state-map (kbd "C-SPC") #'evil-ace-jump-char-to-mode) ; similar to t
 (define-key evil-operator-state-map (kbd "M-SPC") #'evil-ace-jump-word-mode)
- 
+
 ;; different jumps for different visual modes
 (defadvice evil-visual-line (before spc-for-line-jump activate)
 (define-key evil-motion-state-map (kbd "C-;") #'evil-ace-jump-line-mode))
- 
+
 (defadvice evil-visual-char (before spc-for-char-jump activate)
 (define-key evil-motion-state-map (kbd "C-;") #'evil-ace-jump-char-mode))
- 
+
 (defadvice evil-visual-block (before spc-for-char-jump activate)
-(define-key evil-motion-state-map (kbd "C-;") #'evil-ace-jump-char-mode)) 
+(define-key evil-motion-state-map (kbd "C-;") #'evil-ace-jump-char-mode))
 
 ;;; custom color theme
 (require 'color-theme-sanityinc-tomorrow)
@@ -74,6 +78,40 @@ Return a list of installed packages or nil for every skipped package."
 ;;; orgmode
 (define-key global-map "\C-Cl" 'org-store-link)
 (define-key global-map "\C-ca" 'org-agenda)
+
+;;; general auto-complete
+(require 'auto-complete-config)
+(setq ac-delay 0.0)
+(setq ac-quick-help-delay 0.5)
+(ac-config-default)
+
+;;; from mooc
+;;; global settings
+(require 'cl)
+(require 'ido)
+(require 'ffap)
+(require 'uniquify)
+(require 'ansi-color)
+(require 'recentf)
+(require 'linum)
+(require 'smooth-scrolling)
+(require 'whitespace)
+(require 'dired-x)
+(require 'compile)
+(ido-mode t)
+(menu-bar-mode -1)
+(normal-erase-is-backspace-mode 1)
+(put 'downcase-region 'disabled nil)
+(put 'upcase-region 'disabled nil)
+(setq column-number-mode t)
+(setq inhibit-startup-message t)
+(setq save-abbrevs nil)
+(setq show-trailing-whitespace t)
+(setq suggest-key-bindings t)
+(setq vc-follow-symlinks t)
+;; use spaces instead of tabs when indenting
+(setq-default indent-tabs-mode nil)
+(setq-default whitespace-style '(tabs spaces trailing lines space-before-tab newline indentation:space empty space-after-tab space-mark tab-mark newline-mark))
 
 ;;; added automatically
 (custom-set-variables

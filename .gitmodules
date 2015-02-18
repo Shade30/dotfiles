@@ -8,10 +8,10 @@
 	path = .vim/bundle/syntastic
 	url = https://github.com/scrooloose/syntastic.git
 [submodule ".vim/bundle/vim-airline"]
-	path = .vim/bundle/airline
-	url = https://github.com/bling/vim-airline
+	path = .vim/bundle/vim-airline
+	url = https://github.com/bling/vim-airline.git
 [submodule ".vim/bundle/vim-sensible"]
-	path = .vim/bundle/sensible
+	path = .vim/bundle/vim-sensible
 	url = https://github.com/tpope/vim-sensible.git
 [submodule ".emacs.d/ace-jump-mode"]
 	path = .emacs.d/ace-jump-mode
