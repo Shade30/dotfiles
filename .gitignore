@@ -1,2 +1,5 @@
 # vim temp files
 *~
+
+.emacs.d/ido.last
+.emacs.d/bookmarks

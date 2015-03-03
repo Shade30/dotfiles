@@ -48,6 +48,9 @@ Return a list of installed packages or nil for every skipped package."
 ;;; loads packages and activates them
 (package-initialize)
 
+;;; Save emacs sessions
+(desktop-save-mode 1)
+
 ;;; evil mode by default
 (require 'evil)
 (evil-mode t)
@@ -76,9 +79,10 @@ Return a list of installed packages or nil for every skipped package."
 ;;; custom color theme
 (require 'color-theme-sanityinc-tomorrow)
 
-;;; orgmode
+;;; org mode
 (define-key global-map "\C-Cl" 'org-store-link)
 (define-key global-map "\C-ca" 'org-agenda)
+(setq calendar-week-start-day 1)
 
 ;;; general auto-complete
 (require 'auto-complete-config)
@@ -115,11 +119,32 @@ Return a list of installed packages or nil for every skipped package."
 (setq-default whitespace-style '(tabs spaces trailing lines space-before-tab newline indentation:space empty space-after-tab space-mark tab-mark newline-mark))
 
 ;;; nyan mode
-(if window-system
-    (progn
-      (nyan-mode t)
-      (setq nyan-wavy-trail t)
-      (nyan-start-animation)))
+(if window-system (nyan-mode t))
+      
+;;; with animation - buggy
+;; (if window-system
+;;     (progn
+;;       (nyan-mode t)
+;;       (setq nyan-wavy-trail t)
+;;       (nyan-start-animation)))
+
+;;; hide ^M in logs
+(defun remove-dos-eol ()
+  "Do not show ^M in files containing mixed UNIX and DOS line endings."
+  (interactive)
+  (setq buffer-display-table (make-display-table))
+  (aset buffer-display-table ?\^M []))
+
+;;; custom mode for log viewing
+(define-derived-mode log4j-view-mode fundamental-mode
+  (toggle-truncate-lines t)
+  (toggle-read-only t)
+  (auto-revert-tail-mode t)
+  (setq mode-name "Log4J")
+  ;; hide ^M
+  (remove-dos-eol)
+)
+(add-to-list 'auto-mode-alist '("\\app.log\\'" . log4j-view-mode))
 
 ;;; added automatically
 (custom-set-variables
