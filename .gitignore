@@ -3,3 +3,5 @@
 
 .emacs.d/ido.last
 .emacs.d/bookmarks
+.emacs.d/recentf
+.emacs.d/url/cookies
