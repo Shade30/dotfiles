@@ -123,6 +123,9 @@ fi
 # See: http://www.tldp.org/HOWTO/Bash-Prompt-HOWTO/x329.html
 shopt -s histappend
 
+# Disable XON/XOFF to enable search forward
+[[ $- == *i* ]] && stty -ixon
+
 # Aliases
 #
 # Some people use a different file for aliases

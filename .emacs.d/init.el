@@ -22,7 +22,9 @@
 		     clojure-mode
 		     auto-complete
                      nyan-mode
-                     htmlize))
+                     htmlize
+                     flx-ido
+                     groovy-mode))
 
 (defun ensure-package-installed (&rest packages)
   "Assure every package is installed, ask for installation if it's not.
@@ -119,7 +121,6 @@ Return a list of installed packages or nil for every skipped package."
 ;;; from mooc
 ;;; global settings
 (require 'cl)
-(require 'ido)
 (require 'ffap)
 (require 'uniquify)
 (require 'ansi-color)
@@ -129,7 +130,6 @@ Return a list of installed packages or nil for every skipped package."
 (require 'whitespace)
 (require 'dired-x)
 (require 'compile)
-(ido-mode t)
 (menu-bar-mode -1)
 (normal-erase-is-backspace-mode 1)
 (put 'downcase-region 'disabled nil)
@@ -143,6 +143,14 @@ Return a list of installed packages or nil for every skipped package."
 ;; use spaces instead of tabs when indenting
 (setq-default indent-tabs-mode nil)
 (setq-default whitespace-style '(tabs spaces trailing lines space-before-tab newline indentation:space empty space-after-tab space-mark tab-mark newline-mark))
+
+;;; ido mode
+(require 'ido)
+(ido-mode t)
+(ido-everywhere 1)
+(flx-ido-mode 1)
+;; disable ido faces to see flx highlights
+(setq ido-use-faces nil)
 
 ;;; nyan mode
 (if window-system (nyan-mode t))
@@ -160,6 +168,9 @@ Return a list of installed packages or nil for every skipped package."
   (interactive)
   (setq buffer-display-table (make-display-table))
   (aset buffer-display-table ?\^M []))
+
+;;; groovy mode
+(add-to-list 'auto-mode-alist '("\\.groovy\\'" . groovy-mode))
 
 ;;; custom mode for log viewing
 (define-derived-mode log4j-view-mode fundamental-mode
