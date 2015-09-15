@@ -18,6 +18,7 @@
 		     undo-tree
                      smooth-scrolling
 		     ace-jump-mode
+                     icicles
 		     cider
 		     clojure-mode
 		     auto-complete
@@ -79,6 +80,9 @@ Return a list of installed packages or nil for every skipped package."
 
 (defadvice evil-visual-block (before spc-for-char-jump activate)
 (define-key evil-motion-state-map (kbd "C-;") #'evil-ace-jump-char-mode))
+
+;;; icicles
+(require 'icicles)
 
 ;;; custom color theme
 (require 'color-theme-sanityinc-tomorrow)
