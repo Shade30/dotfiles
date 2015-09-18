@@ -18,10 +18,14 @@
 		     undo-tree
                      smooth-scrolling
 		     ace-jump-mode
+                     icicles
 		     cider
 		     clojure-mode
 		     auto-complete
-                     nyan-mode))
+                     nyan-mode
+                     htmlize
+                     flx-ido
+                     groovy-mode))
 
 (defun ensure-package-installed (&rest packages)
   "Assure every package is installed, ask for installation if it's not.
@@ -50,6 +54,7 @@ Return a list of installed packages or nil for every skipped package."
 
 ;;; Save emacs sessions
 (desktop-save-mode 1)
+(setq desktop-load-locked-desktop nil)
 
 ;;; evil mode by default
 (require 'evil)
@@ -76,13 +81,40 @@ Return a list of installed packages or nil for every skipped package."
 (defadvice evil-visual-block (before spc-for-char-jump activate)
 (define-key evil-motion-state-map (kbd "C-;") #'evil-ace-jump-char-mode))
 
+;;; icicles
+(require 'icicles)
+
 ;;; custom color theme
 (require 'color-theme-sanityinc-tomorrow)
 
-;;; org mode
+;;; Org mode
 (define-key global-map "\C-Cl" 'org-store-link)
 (define-key global-map "\C-ca" 'org-agenda)
 (setq calendar-week-start-day 1)
+(setq org-agenda-custom-commands
+      '(("P" "Printed agenda"
+         ((todo "IMPOSSIBLE_PATTERN" ((org-agenda-overriding-header "Week\n------------------")))
+          (agenda "" ((org-agenda-ndays 7)                      ;; overview of appointments
+                      (org-agenda-start-on-weekday 1)           ;; calendar begins on monday
+                      (org-agenda-repeating-timestamp-show-all t)
+                      (org-agenda-entry-types '(:timestamp :sexp))))
+          (todo "IMPOSSIBLE_PATTERN" ((org-agenda-overriding-header "\nToday\n------------------")))
+          (agenda "" ((org-agenda-ndays 1)                      ;; daily agenda
+                      (org-deadline-warning-days 30)            ;; 30 days advanced warning for deadlines
+                      (org-agenda-todo-keyword-format "[ ]")
+                      (org-agenda-scheduled-leaders '("" ""))
+                      (org-agenda-prefix-format "%t%s")))
+          (todo "TODO"                                          ;; todos sorted by context
+                ((org-agenda-prefix-format "[ ] %T: ")
+                 (org-agenda-sorting-strategy '(tag-up priority-down))
+                 (org-agenda-todo-keyword-format "")
+                 (org-agenda-overriding-header "\nTasks by Context\n------------------\n")))
+          )
+         ((org-agenda-with-colors t)
+          (org-agenda-compact-blocks t)
+          (org-agenda-remove-tags t))
+         ("~/org/theagenda.html"))
+        ))
 
 ;;; general auto-complete
 (require 'auto-complete-config)
@@ -93,7 +125,6 @@ Return a list of installed packages or nil for every skipped package."
 ;;; from mooc
 ;;; global settings
 (require 'cl)
-(require 'ido)
 (require 'ffap)
 (require 'uniquify)
 (require 'ansi-color)
@@ -103,7 +134,6 @@ Return a list of installed packages or nil for every skipped package."
 (require 'whitespace)
 (require 'dired-x)
 (require 'compile)
-(ido-mode t)
 (menu-bar-mode -1)
 (normal-erase-is-backspace-mode 1)
 (put 'downcase-region 'disabled nil)
@@ -117,6 +147,14 @@ Return a list of installed packages or nil for every skipped package."
 ;; use spaces instead of tabs when indenting
 (setq-default indent-tabs-mode nil)
 (setq-default whitespace-style '(tabs spaces trailing lines space-before-tab newline indentation:space empty space-after-tab space-mark tab-mark newline-mark))
+
+;;; ido mode
+(require 'ido)
+(ido-mode t)
+(ido-everywhere 1)
+(flx-ido-mode 1)
+;; disable ido faces to see flx highlights
+(setq ido-use-faces nil)
 
 ;;; nyan mode
 (if window-system (nyan-mode t))
@@ -134,6 +172,9 @@ Return a list of installed packages or nil for every skipped package."
   (interactive)
   (setq buffer-display-table (make-display-table))
   (aset buffer-display-table ?\^M []))
+
+;;; groovy mode
+(add-to-list 'auto-mode-alist '("\\.groovy\\'" . groovy-mode))
 
 ;;; custom mode for log viewing
 (define-derived-mode log4j-view-mode fundamental-mode

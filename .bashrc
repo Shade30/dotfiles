@@ -123,6 +123,9 @@ fi
 # See: http://www.tldp.org/HOWTO/Bash-Prompt-HOWTO/x329.html
 shopt -s histappend
 
+# Disable XON/XOFF to enable search forward
+[[ $- == *i* ]] && stty -ixon
+
 # Aliases
 #
 # Some people use a different file for aliases
@@ -152,7 +155,8 @@ alias whence='type -a'                        # where, of a sort
 alias grep='grep --color'                     # show differences in colour
 alias egrep='egrep --color=auto'              # show differences in colour
 alias fgrep='fgrep --color=auto'              # show differences in colour
-export GREP_COLOR='1;31'; # green for matches
+export GREP_COLOR='1;31';                     # green for matches
+alias ic='iconv -f cp866 -t utf-8'            # shortcuts for cmd tools output conversion
 
 # Some shortcuts for different directory listings
 alias ls='ls -hF --color=tty'                 # classify files in colour
