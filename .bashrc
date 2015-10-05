@@ -266,3 +266,10 @@ fi
 # }
 # 
 # alias cd=cd_func
+
+## ------------------------------
+## ----  User-customized code  --
+## ------------------------------
+
+## Define any user-specific variables you want here.
+source ~/.bashrc_custom
