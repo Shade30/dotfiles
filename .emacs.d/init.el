@@ -25,7 +25,11 @@
                      nyan-mode
                      htmlize
                      flx-ido
-                     groovy-mode))
+                     groovy-mode
+                     rainbow-delimiters
+                     smartparens
+                     evil-smartparens
+                     clj-refactor))
 
 (defun ensure-package-installed (&rest packages)
   "Assure every package is installed, ask for installation if it's not.
@@ -121,6 +125,11 @@ Return a list of installed packages or nil for every skipped package."
 (setq ac-delay 0.0)
 (setq ac-quick-help-delay 0.5)
 (ac-config-default)
+
+;;; clojure mode
+(add-hook 'clojure-mode-hook #'subword-mode)
+(add-hook 'clojure-mode-hook #'smartparens-strict-mode)
+(add-hook 'clojure-mode-hook #'rainbow-delimiters-mode)
 
 ;;; from mooc
 ;;; global settings
