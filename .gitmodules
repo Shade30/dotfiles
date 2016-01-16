@@ -13,6 +13,3 @@
 [submodule ".vim/bundle/vim-sensible"]
 	path = .vim/bundle/vim-sensible
 	url = https://github.com/tpope/vim-sensible.git
-[submodule ".emacs.d/ace-jump-mode"]
-	path = .emacs.d/ace-jump-mode
-	url = https://github.com/winterTTr/ace-jump-mode.git

@@ -5,23 +5,23 @@
 (add-to-list 'package-archives '("marmalade" . "https://marmalade-repo.org/packages/"))
 (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/"))
 (add-to-list 'package-archives
-			 '("melpa" . "http://melpa.milkbox.net/packages/") t)
+                         '("melpa" . "http://melpa.milkbox.net/packages/") t)
 
 ;;; loads packages and activates them
 (package-initialize)
 
 ;;; packages to install
 (setq package-list '(color-theme-sanityinc-tomorrow
-		     evil
-		     goto-chg
-		     monokai-theme
-		     undo-tree
+                     evil
+                     goto-chg
+                     monokai-theme
+                     undo-tree
                      smooth-scrolling
-		     ace-jump-mode
+                     ace-jump-mode
                      icicles
-		     cider
-		     clojure-mode
-		     auto-complete
+                     cider
+                     clojure-mode
+                     auto-complete
                      nyan-mode
                      htmlize
                      flx-ido
@@ -29,7 +29,10 @@
                      rainbow-delimiters
                      smartparens
                      evil-smartparens
-                     clj-refactor))
+                     clj-refactor
+                     projectile
+                     cider-eval-sexp-fu
+                     ))
 
 (defun ensure-package-installed (&rest packages)
   "Assure every package is installed, ask for installation if it's not.
@@ -60,6 +63,11 @@ Return a list of installed packages or nil for every skipped package."
 (desktop-save-mode 1)
 (setq desktop-load-locked-desktop nil)
 
+;;; Start server on startup
+(require 'server)
+(if (not (server-running-p))
+    (server-start))
+
 ;;; evil mode by default
 (require 'evil)
 (evil-mode t)
@@ -88,8 +96,33 @@ Return a list of installed packages or nil for every skipped package."
 ;;; icicles
 (require 'icicles)
 
+;;; projectile
+(projectile-global-mode)
+
+;; load in customizations
+(setq custom-file "~/init_custom.el")
+(if (file-exists-p "~/init_custom.el") (load-library "~/init_custom.el"))
+
+;;; system-type definition
+(defun system-is-linux()
+    (string-equal system-type "gnu/linux"))
+(defun system-is-windows()
+    (string-equal system-type "windows-nt"))
+(defun system-is-cygwin()
+    (string-equal system-type "cygwin"))
+
+;;; custom font - linux
+(when (system-is-linux)
+  (set-face-attribute 'default nil :family "Liberation Mono")
+  (add-to-list 'default-frame-alist '(font . "Liberation Mono-11"))
+)
+
 ;;; custom color theme
-(require 'color-theme-sanityinc-tomorrow)
+;;(require 'color-theme-sanityinc-tomorrow)
+(customize-set-variable 'custom-enabled-themes (quote (sanityinc-tomorrow-night)))
+
+;;; hide splash screen
+(customize-set-variable 'inhibit-startup-screen t)
 
 ;;; Org mode
 (define-key global-map "\C-Cl" 'org-store-link)
@@ -130,6 +163,17 @@ Return a list of installed packages or nil for every skipped package."
 (add-hook 'clojure-mode-hook #'subword-mode)
 (add-hook 'clojure-mode-hook #'smartparens-strict-mode)
 (add-hook 'clojure-mode-hook #'rainbow-delimiters-mode)
+(require 'cider-eval-sexp-fu)
+
+;;; cider autocomplete
+(require 'ac-cider)
+(add-hook 'cider-mode-hook 'ac-flyspell-workaround)
+(add-hook 'cider-mode-hook 'ac-cider-setup)
+(add-hook 'cider-repl-mode-hook 'ac-cider-setup)
+(eval-after-load "auto-complete"
+  '(progn
+     (add-to-list 'ac-modes 'cider-mode)
+     (add-to-list 'ac-modes 'cider-repl-mode)))
 
 ;;; from mooc
 ;;; global settings
@@ -195,30 +239,3 @@ Return a list of installed packages or nil for every skipped package."
   (remove-dos-eol)
 )
 (add-to-list 'auto-mode-alist '("\\app.log\\'" . log4j-view-mode))
-
-;;; added automatically
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(custom-enabled-themes (quote (sanityinc-tomorrow-eighties)))
- '(custom-safe-themes
-   (quote
-    ("628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" "4e262566c3d57706c70e403d440146a5440de056dfaeb3062f004da1711d83fc" default)))
- '(inhibit-startup-screen t)
- '(org-agenda-files (quote ("~/org/main.org")))
- '(sql-connection-alist
-   (quote
-    (("pg_beirut_trunk"
-      (sql-product
-       (quote postgres))
-      (sql-user "root")
-      (sql-database "taxi_beirut")
-      (sql-server "localhost"))))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(default ((t (:family "Consolas" :foundry "outline" :slant normal :weight normal :height 113 :width normal)))))
