@@ -21,6 +21,7 @@
                      icicles
                      cider
                      clojure-mode
+                     ac-cider
                      auto-complete
                      nyan-mode
                      htmlize
@@ -65,8 +66,8 @@ Return a list of installed packages or nil for every skipped package."
 
 ;;; Start server on startup
 (require 'server)
-(if (not (server-running-p))
-    (server-start))
+(unless (server-running-p)
+  (server-start))
 
 ;;; evil mode by default
 (require 'evil)
@@ -150,8 +151,28 @@ Return a list of installed packages or nil for every skipped package."
          ((org-agenda-with-colors t)
           (org-agenda-compact-blocks t)
           (org-agenda-remove-tags t))
-         ("~/org/theagenda.html"))
+         ;;("~/org/theagenda.html")
+         )
+        ("Y" "Youtrack agenda"
+         ((todo "TODO|STARTED|WAITING"
+                ((org-agenda-sorting-strategy '(tag-up priority-down))
+                 (org-agenda-prefix-format "%b%T>")
+                 (org-agenda-overriding-header "Current Tasks\n------------------\n")))
+          )
+         ((org-agenda-with-colors t)
+          (org-agenda-compact-blocks t)
+          (org-agenda-remove-tags t)
+          (org-agenda-files '("~/org/current_tasks.org")))
+         ("~/static/current_tasks.html"))
         ))
+
+;; hook to generate current tasks PNG
+(defun generate-current-tasks-png ()
+  "Generate PNG image from tasks in current-tasks.org file using phantomjs rasterify.js"
+  (when (and (eq major-mode 'org-mode) (string= buffer-file-name "/home/fedorov/org/current_tasks.org"))
+    (org-store-agenda-views)
+    (shell-command-to-string "phantomjs D:\\\\static\\\\rasterize.js file:///d:/static/current_tasks.html D:\\\\static\\\\data.png")))
+(add-hook 'after-save-hook #'generate-current-tasks-png)
 
 ;;; general auto-complete
 (require 'auto-complete-config)
@@ -164,6 +185,20 @@ Return a list of installed packages or nil for every skipped package."
 (add-hook 'clojure-mode-hook #'smartparens-strict-mode)
 (add-hook 'clojure-mode-hook #'rainbow-delimiters-mode)
 (require 'cider-eval-sexp-fu)
+
+;;; cider autocomplete
+(require 'ac-cider)
+(add-hook 'cider-mode-hook 'ac-flyspell-workaround)
+(add-hook 'cider-mode-hook 'ac-cider-setup)
+(add-hook 'cider-repl-mode-hook 'ac-cider-setup)
+(eval-after-load "auto-complete"
+  '(progn
+     (add-to-list 'ac-modes 'cider-mode)
+     (add-to-list 'ac-modes 'cider-repl-mode)))
+
+;;; clojure mode for org-babel
+(require 'ob-clojure)
+(setq org-babel-clojure-backend 'cider)
 
 ;;; cider autocomplete
 (require 'ac-cider)
