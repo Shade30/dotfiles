@@ -179,16 +179,6 @@ Return a list of installed packages or nil for every skipped package."
 (require 'ob-clojure)
 (setq org-babel-clojure-backend 'cider)
 
-;;; cider autocomplete
-(require 'ac-cider)
-(add-hook 'cider-mode-hook 'ac-flyspell-workaround)
-(add-hook 'cider-mode-hook 'ac-cider-setup)
-(add-hook 'cider-repl-mode-hook 'ac-cider-setup)
-(eval-after-load "auto-complete"
-  '(progn
-     (add-to-list 'ac-modes 'cider-mode)
-     (add-to-list 'ac-modes 'cider-repl-mode)))
-
 ;;; from mooc
 ;;; global settings
 (require 'cl)
