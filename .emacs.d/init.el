@@ -101,8 +101,8 @@ Return a list of installed packages or nil for every skipped package."
 (projectile-global-mode)
 
 ;; load in customizations
-(setq custom-file "~/init_custom.el")
-(if (file-exists-p "~/init_custom.el") (load-library "~/init_custom.el"))
+(setq custom-file "~/.emacs.d/init_customizations.el")
+(load "~/.emacs.d/init_customizations.el")
 
 ;;; system-type definition
 (defun system-is-linux()
@@ -151,28 +151,7 @@ Return a list of installed packages or nil for every skipped package."
          ((org-agenda-with-colors t)
           (org-agenda-compact-blocks t)
           (org-agenda-remove-tags t))
-         ;;("~/org/theagenda.html")
-         )
-        ("Y" "Youtrack agenda"
-         ((todo "TODO|STARTED|WAITING"
-                ((org-agenda-sorting-strategy '(tag-up priority-down))
-                 (org-agenda-prefix-format "%b%T>")
-                 (org-agenda-overriding-header "Current Tasks\n------------------\n")))
-          )
-         ((org-agenda-with-colors t)
-          (org-agenda-compact-blocks t)
-          (org-agenda-remove-tags t)
-          (org-agenda-files '("~/org/current_tasks.org")))
-         ("~/static/current_tasks.html"))
-        ))
-
-;; hook to generate current tasks PNG
-(defun generate-current-tasks-png ()
-  "Generate PNG image from tasks in current-tasks.org file using phantomjs rasterify.js"
-  (when (and (eq major-mode 'org-mode) (string= buffer-file-name "/home/fedorov/org/current_tasks.org"))
-    (org-store-agenda-views)
-    (shell-command-to-string "phantomjs D:\\\\static\\\\rasterize.js file:///d:/static/current_tasks.html D:\\\\static\\\\data.png")))
-(add-hook 'after-save-hook #'generate-current-tasks-png)
+         ("~/org/theagenda.html"))))
 
 ;;; general auto-complete
 (require 'auto-complete-config)
@@ -274,3 +253,6 @@ Return a list of installed packages or nil for every skipped package."
   (remove-dos-eol)
 )
 (add-to-list 'auto-mode-alist '("\\app.log\\'" . log4j-view-mode))
+
+;;; load custom settings
+(if (file-exists-p "~/.emacs.d/init_custom.el") (load-library "~/.emacs.d/init_custom.el"))
