@@ -101,7 +101,6 @@ Return a list of installed packages or nil for every skipped package."
 (projectile-global-mode)
 
 ;; load in customizations
-(setq custom-file "~/.emacs.d/init_customizations.el")
 (load "~/.emacs.d/init_customizations.el")
 
 ;;; system-type definition
@@ -245,4 +244,5 @@ Return a list of installed packages or nil for every skipped package."
 (add-to-list 'auto-mode-alist '("\\app.log\\'" . log4j-view-mode))
 
 ;;; load custom settings
+(setq custom-file "~/.emacs.d/init_custom.el")
 (if (file-exists-p "~/.emacs.d/init_custom.el") (load-library "~/.emacs.d/init_custom.el"))
