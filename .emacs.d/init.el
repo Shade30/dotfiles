@@ -33,6 +33,9 @@
                      clj-refactor
                      projectile
                      cider-eval-sexp-fu
+                     todochiku
+                     org-pomodoro
+                     scss-mode
                      ))
 
 (defun ensure-package-installed (&rest packages)
@@ -119,6 +122,7 @@ Return a list of installed packages or nil for every skipped package."
 
 ;;; custom color theme
 ;;(require 'color-theme-sanityinc-tomorrow)
+(customize-set-variable 'custom-safe-themes (quote ("06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" "628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" default)))
 (customize-set-variable 'custom-enabled-themes (quote (sanityinc-tomorrow-night)))
 
 ;;; hide splash screen
@@ -151,6 +155,49 @@ Return a list of installed packages or nil for every skipped package."
           (org-agenda-compact-blocks t)
           (org-agenda-remove-tags t))
          ("~/org/theagenda.html"))))
+
+;;; todochiku & org-pomodoro
+(require 'todochiku)
+(setq todochiku-icons-directory (expand-file-name "~/todochiku-icons"))
+
+(defun cygpath-win (path)
+  "Gets windows path for cygwin path."
+  (shell-command-to-string (concat "cygpath -w " path)))
+
+(defun todochiku-get-arguments (title message icon sticky)
+  "Gets todochiku arguments.
+This would be better done through a customization probably."
+  (case system-type
+    ('windows-nt (list "/M" title message icon))
+    ('darwin (list title (if sticky "-s" "") "-m" message "--image" icon ))
+    ('cygwin (list (concat "/t:" title) (concat "/i:" (cygpath-win icon)) message))
+    (t (list "-i" icon "-t"
+             (if sticky "0" (int-to-string (* 1000 todochiku-timeout)))
+             title message))))
+
+;; Pomodoro notifications
+(when (string= "cygwin" system-type)
+  (defun mj-notify-pomodoro-done ()
+    (todochiku-message "Pomodoro"
+                       "
+  This Pomodoro Session is Complete
+
+        Release Concentration
+
+           Take a Break
+
+" (todochiku-icon 'bell)))
+  (defun mj-notify-pomodoro-break-finished ()
+    (todochiku-message "Pomodoro"
+                       "
+         Break is Complete
+
+        Get Back to Work! =)
+
+" (todochiku-icon 'bell)))
+  (add-hook 'org-timer-done-hook 'mj-notify-pomodoro-done)
+  (add-hook 'org-pomodoro-break-finished-hook 'mj-notify-pomodoro-break-finished)
+  (add-hook 'org-pomodoro-finished-hook 'mj-notify-pomodoro-done))
 
 ;;; general auto-complete
 (require 'auto-complete-config)
@@ -242,6 +289,33 @@ Return a list of installed packages or nil for every skipped package."
   (remove-dos-eol)
 )
 (add-to-list 'auto-mode-alist '("\\app.log\\'" . log4j-view-mode))
+
+;; highlight hex colors
+(defun xah-syntax-color-hex ()
+  "Syntax color text of the form #ff1100 in current buffer.
+URL 'http://ergoemacs.org/emacs/emacs_CSS_colors.html'
+With enchancements from 'https://www.emacswiki.org/emacs/HexColour'
+Version 2016-03-15"
+  (interactive)
+  (font-lock-add-keywords
+   nil
+   '(("#[ABCDEFabcdef[:digit:]]\\{6\\}"
+      (0 (put-text-property
+          (match-beginning 0)
+          (match-end 0)
+          'face (list :background (match-string-no-properties 0)
+                      :foreground (if (>= (apply '+ (x-color-values
+                                                     (match-string-no-properties 0)))
+                                          (* (apply '+ (x-color-values "white")) .6))
+                                      "black"
+                                    "white"
+                                    )))))))
+  (font-lock-fontify-buffer))
+
+(add-hook 'css-mode-hook 'xah-syntax-color-hex)
+(add-hook 'scss-mode-hook 'xah-syntax-color-hex)
+(add-hook 'php-mode-hook 'xah-syntax-color-hex)
+(add-hook 'html-mode-hook 'xah-syntax-color-hex)
 
 ;;; load custom settings
 (setq custom-file "~/.emacs.d/init_custom.el")
