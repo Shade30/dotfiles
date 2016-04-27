@@ -33,9 +33,9 @@
                      clj-refactor
                      projectile
                      cider-eval-sexp-fu
-                     todochiku
                      org-pomodoro
                      scss-mode
+                     markdown-mode
                      ))
 
 (defun ensure-package-installed (&rest packages)
@@ -156,48 +156,21 @@ Return a list of installed packages or nil for every skipped package."
           (org-agenda-remove-tags t))
          ("~/org/theagenda.html"))))
 
-;;; todochiku & org-pomodoro
-(require 'todochiku)
-(setq todochiku-icons-directory (expand-file-name "~/todochiku-icons"))
+;;; gntp alert for org-pomodoro
+(require 'alert)
+(require 'gntp)
 
-(defun cygpath-win (path)
-  "Gets windows path for cygwin path."
-  (shell-command-to-string (concat "cygpath -w " path)))
+(setq alert-fade-time 10)
+(setq gntp-server "localhost")
 
-(defun todochiku-get-arguments (title message icon sticky)
-  "Gets todochiku arguments.
-This would be better done through a customization probably."
-  (case system-type
-    ('windows-nt (list "/M" title message icon))
-    ('darwin (list title (if sticky "-s" "") "-m" message "--image" icon ))
-    ('cygwin (list (concat "/t:" title) (concat "/i:" (cygpath-win icon)) message))
-    (t (list "-i" icon "-t"
-             (if sticky "0" (int-to-string (* 1000 todochiku-timeout)))
-             title message))))
-
-;; Pomodoro notifications
-(when (string= "cygwin" system-type)
-  (defun mj-notify-pomodoro-done ()
-    (todochiku-message "Pomodoro"
-                       "
-  This Pomodoro Session is Complete
-
-        Release Concentration
-
-           Take a Break
-
-" (todochiku-icon 'bell)))
-  (defun mj-notify-pomodoro-break-finished ()
-    (todochiku-message "Pomodoro"
-                       "
-         Break is Complete
-
-        Get Back to Work! =)
-
-" (todochiku-icon 'bell)))
-  (add-hook 'org-timer-done-hook 'mj-notify-pomodoro-done)
-  (add-hook 'org-pomodoro-break-finished-hook 'mj-notify-pomodoro-break-finished)
-  (add-hook 'org-pomodoro-finished-hook 'mj-notify-pomodoro-done))
+(condition-case nil
+  (let ((notifications
+	 `((alert
+	    :enabled t))))
+    (gntp-register notifications gntp-server)
+    (setq alert-default-style 'gntp))
+  (error
+   (setq alert-default-style 'message)))
 
 ;;; general auto-complete
 (require 'auto-complete-config)
