@@ -98,9 +98,6 @@ Return a list of installed packages or nil for every skipped package."
 (defadvice evil-visual-block (before spc-for-char-jump activate)
 (define-key evil-motion-state-map (kbd "C-;") #'evil-ace-jump-char-mode))
 
-;;; icicles
-(require 'icicles)
-
 ;;; projectile
 (projectile-global-mode)
 
@@ -232,6 +229,9 @@ Return a list of installed packages or nil for every skipped package."
 ;; (flx-ido-mode 1)
 ;; ;; disable ido faces to see flx highlights
 ;; (setq ido-use-faces nil)
+
+;;; icicles
+;; (require 'icicles)
 
 ;;; helm
 (require 'helm)
