@@ -48,6 +48,18 @@ nmap <silent> <C-M-Right> :call ScrollOtherWindow("rightHalf")<CR>
 " pathogen
 execute pathogen#infect()
 
+" font
+if has('gui_running')
+	set guioptions-=T  " no toolbar
+	colorscheme base16-default-dark
+	set lines=60 columns=108 linespace=0
+	if has('gui_win32')
+		set guifont=Consolas:h12:cRUSSIAN
+	else
+		set guifont=DejaVu\ Sans\ Mono\ 12
+	endif
+endif
+
 " local .vimrc file
 if filereadable(glob("~/.vimrc.local")) 
 	source ~/.vimrc.local
