@@ -25,7 +25,11 @@
                      nyan-mode
                      htmlize
                      flx-ido
-                     groovy-mode))
+                     groovy-mode
+                     projectile
+                     rainbow-delimiters
+                     cider-eval-sexp-fu
+		     ))
 
 (defun ensure-package-installed (&rest packages)
   "Assure every package is installed, ask for installation if it's not.
@@ -84,8 +88,11 @@ Return a list of installed packages or nil for every skipped package."
 ;;; icicles
 (require 'icicles)
 
+;;; projectile
+(projectile-global-mode)
+
 ;;; custom color theme
-(require 'color-theme-sanityinc-tomorrow)
+;;(require 'color-theme-sanityinc-tomorrow)
 
 ;;; Org mode
 (define-key global-map "\C-Cl" 'org-store-link)
@@ -121,6 +128,10 @@ Return a list of installed packages or nil for every skipped package."
 (setq ac-delay 0.0)
 (setq ac-quick-help-delay 0.5)
 (ac-config-default)
+
+;;; clojure mode
+(add-hook 'clojure-mode-hook 'rainbow-delimiters-mode)
+(require 'cider-eval-sexp-fu)
 
 ;;; from mooc
 ;;; global settings
@@ -176,6 +187,8 @@ Return a list of installed packages or nil for every skipped package."
 ;;; groovy mode
 (add-to-list 'auto-mode-alist '("\\.groovy\\'" . groovy-mode))
 
+(set-face-attribute 'default nil :family "Liberation Mono")
+
 ;;; custom mode for log viewing
 (define-derived-mode log4j-view-mode fundamental-mode
   (toggle-truncate-lines t)
@@ -187,18 +200,32 @@ Return a list of installed packages or nil for every skipped package."
 )
 (add-to-list 'auto-mode-alist '("\\app.log\\'" . log4j-view-mode))
 
+;;; custom font - linux
+(add-to-list 'default-frame-alist '(font . "Liberation Mono-11"))
+
+;; load in customizations
+(if (file-exists-p "~/init_custom.el") (load-library "~/init_custom.el"))
+
 ;;; added automatically
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(custom-enabled-themes (quote (sanityinc-tomorrow-eighties)))
+ '(ansi-color-faces-vector
+   [default bold shadow italic underline bold bold-italic bold])
+ '(ansi-color-names-vector
+   (vector "#ffffff" "#ff9da4" "#d1f1a9" "#ffeead" "#bbdaff" "#ebbbff" "#99ffff" "#002451"))
+ '(custom-enabled-themes (quote (sanityinc-tomorrow-night)))
  '(custom-safe-themes
    (quote
-    ("628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" "4e262566c3d57706c70e403d440146a5440de056dfaeb3062f004da1711d83fc" default)))
+    ("06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" "82d2cac368ccdec2fcc7573f24c3f79654b78bf133096f9b40c20d97ec1d8016" "628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" "4e262566c3d57706c70e403d440146a5440de056dfaeb3062f004da1711d83fc" default)))
+ '(fci-rule-color "#00346e")
  '(inhibit-startup-screen t)
  '(org-agenda-files (quote ("~/org/main.org")))
+ '(package-selected-packages
+   (quote
+    (smooth-scrolling rainbow-delimiters projectile nyan-mode monokai-theme icicles htmlize groovy-mode flx-ido evil color-theme-sanityinc-tomorrow cider-eval-sexp-fu cider auto-complete ace-jump-mode)))
  '(sql-connection-alist
    (quote
     (("pg_beirut_trunk"
@@ -206,10 +233,32 @@ Return a list of installed packages or nil for every skipped package."
        (quote postgres))
       (sql-user "root")
       (sql-database "taxi_beirut")
-      (sql-server "localhost"))))))
+      (sql-server "localhost")))))
+ '(vc-annotate-background nil)
+ '(vc-annotate-color-map
+   (quote
+    ((20 . "#ff9da4")
+     (40 . "#ffc58f")
+     (60 . "#ffeead")
+     (80 . "#d1f1a9")
+     (100 . "#99ffff")
+     (120 . "#bbdaff")
+     (140 . "#ebbbff")
+     (160 . "#ff9da4")
+     (180 . "#ffc58f")
+     (200 . "#ffeead")
+     (220 . "#d1f1a9")
+     (240 . "#99ffff")
+     (260 . "#bbdaff")
+     (280 . "#ebbbff")
+     (300 . "#ff9da4")
+     (320 . "#ffc58f")
+     (340 . "#ffeead")
+     (360 . "#d1f1a9"))))
+ '(vc-annotate-very-old-color nil))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:family "Consolas" :foundry "outline" :slant normal :weight normal :height 113 :width normal)))))
+ )
