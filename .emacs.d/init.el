@@ -5,31 +5,39 @@
 (add-to-list 'package-archives '("marmalade" . "https://marmalade-repo.org/packages/"))
 (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/"))
 (add-to-list 'package-archives
-			 '("melpa" . "http://melpa.milkbox.net/packages/") t)
+                         '("melpa" . "http://melpa.milkbox.net/packages/") t)
 
 ;;; loads packages and activates them
 (package-initialize)
 
 ;;; packages to install
 (setq package-list '(color-theme-sanityinc-tomorrow
-		     evil
-		     goto-chg
-		     monokai-theme
-		     undo-tree
+                     evil
+                     goto-chg
+                     monokai-theme
+                     undo-tree
                      smooth-scrolling
-		     ace-jump-mode
+                     ace-jump-mode
                      icicles
-		     cider
-		     clojure-mode
-		     auto-complete
+                     cider
+                     clojure-mode
+                     ac-cider
+                     auto-complete
                      nyan-mode
                      htmlize
                      flx-ido
                      groovy-mode
-                     projectile
                      rainbow-delimiters
+                     smartparens
+                     evil-smartparens
+                     clj-refactor
+                     projectile
                      cider-eval-sexp-fu
-		     ))
+                     org-pomodoro
+                     scss-mode
+                     markdown-mode
+                     helm
+					 ))
 
 (defun ensure-package-installed (&rest packages)
   "Assure every package is installed, ask for installation if it's not.
@@ -60,6 +68,11 @@ Return a list of installed packages or nil for every skipped package."
 (desktop-save-mode 1)
 (setq desktop-load-locked-desktop nil)
 
+;;; Start server on startup
+(require 'server)
+(unless (server-running-p)
+  (server-start))
+
 ;;; evil mode by default
 (require 'evil)
 (evil-mode t)
@@ -85,14 +98,36 @@ Return a list of installed packages or nil for every skipped package."
 (defadvice evil-visual-block (before spc-for-char-jump activate)
 (define-key evil-motion-state-map (kbd "C-;") #'evil-ace-jump-char-mode))
 
-;;; icicles
-(require 'icicles)
+;;; projectile
+(projectile-global-mode)
+
+;; load in customizations
+(load "~/.emacs.d/init_customizations.el")
+
+;;; system-type definition
+(defun system-is-linux()
+    (string-equal system-type "gnu/linux"))
+(defun system-is-windows()
+    (string-equal system-type "windows-nt"))
+(defun system-is-cygwin()
+    (string-equal system-type "cygwin"))
+
+;;; custom font - linux
+(when (system-is-linux)
+  (set-face-attribute 'default nil :family "Liberation Mono")
+  (add-to-list 'default-frame-alist '(font . "Liberation Mono-11"))
+)
 
 ;;; projectile
 (projectile-global-mode)
 
 ;;; custom color theme
 ;;(require 'color-theme-sanityinc-tomorrow)
+(customize-set-variable 'custom-safe-themes (quote ("06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" "628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" default)))
+(customize-set-variable 'custom-enabled-themes (quote (sanityinc-tomorrow-night)))
+
+;;; hide splash screen
+(customize-set-variable 'inhibit-startup-screen t)
 
 ;;; Org mode
 (define-key global-map "\C-Cl" 'org-store-link)
@@ -120,8 +155,23 @@ Return a list of installed packages or nil for every skipped package."
          ((org-agenda-with-colors t)
           (org-agenda-compact-blocks t)
           (org-agenda-remove-tags t))
-         ("~/org/theagenda.html"))
-        ))
+         ("~/org/theagenda.html"))))
+
+;;; gntp alert for org-pomodoro
+(require 'alert)
+(require 'gntp)
+
+(setq alert-fade-time 10)
+(setq gntp-server "localhost")
+
+(condition-case nil
+  (let ((notifications
+	 `((alert
+	    :enabled t))))
+    (gntp-register notifications gntp-server)
+    (setq alert-default-style 'gntp))
+  (error
+   (setq alert-default-style 'message)))
 
 ;;; general auto-complete
 (require 'auto-complete-config)
@@ -130,8 +180,24 @@ Return a list of installed packages or nil for every skipped package."
 (ac-config-default)
 
 ;;; clojure mode
-(add-hook 'clojure-mode-hook 'rainbow-delimiters-mode)
+(add-hook 'clojure-mode-hook #'subword-mode)
+(add-hook 'clojure-mode-hook #'smartparens-strict-mode)
+(add-hook 'clojure-mode-hook #'rainbow-delimiters-mode)
 (require 'cider-eval-sexp-fu)
+
+;;; cider autocomplete
+(require 'ac-cider)
+(add-hook 'cider-mode-hook 'ac-flyspell-workaround)
+(add-hook 'cider-mode-hook 'ac-cider-setup)
+(add-hook 'cider-repl-mode-hook 'ac-cider-setup)
+(eval-after-load "auto-complete"
+  '(progn
+     (add-to-list 'ac-modes 'cider-mode)
+     (add-to-list 'ac-modes 'cider-repl-mode)))
+
+;;; clojure mode for org-babel
+(require 'ob-clojure)
+(setq org-babel-clojure-backend 'cider)
 
 ;;; from mooc
 ;;; global settings
@@ -160,12 +226,45 @@ Return a list of installed packages or nil for every skipped package."
 (setq-default whitespace-style '(tabs spaces trailing lines space-before-tab newline indentation:space empty space-after-tab space-mark tab-mark newline-mark))
 
 ;;; ido mode
-(require 'ido)
-(ido-mode t)
-(ido-everywhere 1)
-(flx-ido-mode 1)
-;; disable ido faces to see flx highlights
-(setq ido-use-faces nil)
+;; (require 'ido)
+;; (ido-mode t)
+;; (ido-everywhere 1)
+;; (flx-ido-mode 1)
+;; ;; disable ido faces to see flx highlights
+;; (setq ido-use-faces nil)
+
+;;; icicles
+;; (require 'icicles)
+
+;;; helm
+(require 'helm)
+(require 'helm-config)
+
+;; The default "C-x c" is quite close to "C-x C-c", which quits Emacs.
+;; Changed to "C-c h". Note: We must set "C-c h" globally, because we
+;; cannot change `helm-command-prefix-key' once `helm-config' is loaded.
+(global-set-key (kbd "C-c h") 'helm-command-prefix)
+(global-unset-key (kbd "C-x c"))
+
+;; Helm's generic functions
+(global-set-key (kbd "M-x") #'helm-M-x)
+(global-set-key (kbd "C-x r b") #'helm-filtered-bookmarks)
+(global-set-key (kbd "C-x C-f") #'helm-find-files)
+
+(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
+(define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
+(define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
+
+(when (executable-find "curl")
+  (setq helm-google-suggest-use-curl-p t))
+
+(setq helm-split-window-in-side-p           t ; open helm buffer inside current window, not occupy whole other window
+      helm-move-to-line-cycle-in-source     t ; move to end or beginning of source when reaching top or bottom of source.
+      helm-ff-search-library-in-sexp        t ; search for library in `require' and `declare-function' sexp.
+      helm-scroll-amount                    8 ; scroll 8 lines other window using M-<next>/M-<prior>
+      helm-ff-file-name-history-use-recentf t)
+
+(helm-mode 1)
 
 ;;; nyan mode
 (if window-system (nyan-mode t))
@@ -262,3 +361,34 @@ Return a list of installed packages or nil for every skipped package."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+
+;; highlight hex colors
+(defun xah-syntax-color-hex ()
+  "Syntax color text of the form #ff1100 in current buffer.
+URL 'http://ergoemacs.org/emacs/emacs_CSS_colors.html'
+With enchancements from 'https://www.emacswiki.org/emacs/HexColour'
+Version 2016-03-15"
+  (interactive)
+  (font-lock-add-keywords
+   nil
+   '(("#[ABCDEFabcdef[:digit:]]\\{6\\}"
+      (0 (put-text-property
+          (match-beginning 0)
+          (match-end 0)
+          'face (list :background (match-string-no-properties 0)
+                      :foreground (if (>= (apply '+ (x-color-values
+                                                     (match-string-no-properties 0)))
+                                          (* (apply '+ (x-color-values "white")) .6))
+                                      "black"
+                                    "white"
+                                    )))))))
+  (font-lock-fontify-buffer))
+
+(add-hook 'css-mode-hook 'xah-syntax-color-hex)
+(add-hook 'scss-mode-hook 'xah-syntax-color-hex)
+(add-hook 'php-mode-hook 'xah-syntax-color-hex)
+(add-hook 'html-mode-hook 'xah-syntax-color-hex)
+
+;;; load custom settings
+(setq custom-file "~/.emacs.d/init_custom.el")
+(if (file-exists-p "~/.emacs.d/init_custom.el") (load-library "~/.emacs.d/init_custom.el"))

@@ -48,8 +48,19 @@ nmap <silent> <C-M-Right> :call ScrollOtherWindow("rightHalf")<CR>
 " pathogen
 execute pathogen#infect()
 
-" dbext
-" mssql
-let g:dbext_default_profile_mssql_fcs_dump = 'type=SQLSRV:user=sa:passwd=saPass1:host=localhost:dbname=taxi_fcs_dump'
-" postgres
-let g:dbext_default_profile_postgres_fcs_dump = 'type=PGSQL:user=postgres:passwd=postgres:host=localhost:dbname=taxi_fcs_dump'
+" font
+if has('gui_running')
+	set guioptions-=T  " no toolbar
+	colorscheme base16-default-dark
+	set lines=60 columns=108 linespace=0
+	if has('gui_win32')
+		set guifont=Consolas:h12:cRUSSIAN
+	else
+		set guifont=DejaVu\ Sans\ Mono\ 12
+	endif
+endif
+
+" local .vimrc file
+if filereadable(glob("~/.vimrc.local")) 
+	source ~/.vimrc.local
+endif

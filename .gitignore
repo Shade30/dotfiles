@@ -1,7 +1,67 @@
-# vim temp files
-*~
+# Ignore everything by default
+*
 
-.emacs.d/ido.last
-.emacs.d/bookmarks
-.emacs.d/recentf
-.emacs.d/url/cookies
+# readme
+!README.md
+
+# Bash
+!.bash*
+.bash*~
+.*.swp
+.bash_history
+.bash_local
+.bash_logout
+!.profile
+
+# mintty
+!.minttyrc
+
+# The gitignore of this repository itself (!)
+!.gitignore
+!.gitmodules
+!.gitattributes
+
+# Emacs
+!.emacs.d
+!.emacs.d/init.el
+!.emacs.d/eshell
+!.emacs.d/eshell/alias
+
+# Vim plugins, ftplugins, syntax etc etc
+!.vim
+!.vim/*
+# But do ignore netrw history
+.vim/.netrwhist
+!.vim/autoload/*
+!.vim/autoload/*/*
+# Pathogen bundle stuff (WTB recursive gitignore excludes...)
+# e.g. .vim/bundle/<plugin>/syntax/special_syntax.vim
+# (Added a few more asterisks just to cover any deeper setups. Sigh.)
+!.vim/bundle
+!.vim/bundle/*
+!.vim/bundle/*/*
+!.vim/bundle/*/*/*
+!.vim/bundle/*/*/*/*
+!.vim/bundle/*/*/*/*/*
+!.vim/colors/*
+!.vim/doc/*
+!.vim/ftdetect/*
+!.vim/ftplugin/*
+!.vim/ftplugin/*/*
+!.vim/indent/*
+!.vim/plugin/*
+!.vim/spell/*
+!.vim/syntax/*
+# Vim settings
+!.vimrc
+
+# Screen, tmux
+!.screenrc
+!.tmux.conf
+!.tmux
+!.tmux/*.yml
+
+# Gem config
+!.gemrc
+
+
