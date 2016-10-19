@@ -60,6 +60,9 @@ if has('gui_running')
 	endif
 endif
 
+" easymotion
+let g:EasyMotion_smartcase = 1
+
 " local .vimrc file
 if filereadable(glob("~/.vimrc.local")) 
 	source ~/.vimrc.local
