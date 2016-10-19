@@ -118,9 +118,6 @@ Return a list of installed packages or nil for every skipped package."
   (add-to-list 'default-frame-alist '(font . "Liberation Mono-11"))
 )
 
-;;; projectile
-(projectile-global-mode)
-
 ;;; custom color theme
 ;;(require 'color-theme-sanityinc-tomorrow)
 (customize-set-variable 'custom-safe-themes (quote ("06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" "628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" default)))
@@ -286,8 +283,6 @@ Return a list of installed packages or nil for every skipped package."
 ;;; groovy mode
 (add-to-list 'auto-mode-alist '("\\.groovy\\'" . groovy-mode))
 
-(set-face-attribute 'default nil :family "Liberation Mono")
-
 ;;; custom mode for log viewing
 (define-derived-mode log4j-view-mode fundamental-mode
   (toggle-truncate-lines t)
@@ -298,12 +293,6 @@ Return a list of installed packages or nil for every skipped package."
   (remove-dos-eol)
 )
 (add-to-list 'auto-mode-alist '("\\app.log\\'" . log4j-view-mode))
-
-;;; custom font - linux
-(add-to-list 'default-frame-alist '(font . "Liberation Mono-11"))
-
-;; load in customizations
-(if (file-exists-p "~/init_custom.el") (load-library "~/init_custom.el"))
 
 ;; highlight hex colors
 (defun xah-syntax-color-hex ()
