@@ -118,6 +118,13 @@ Return a list of installed packages or nil for every skipped package."
   (add-to-list 'default-frame-alist '(font . "Liberation Mono-11"))
 )
 
+;;; custom font - cygwin
+(when (system-is-cygwin)
+  (set-face-attribute 'default nil :family "Consolas")
+  (add-to-list 'default-frame-alist '(font . "Consolas-12"))
+)
+  
+
 ;;; custom color theme
 ;;(require 'color-theme-sanityinc-tomorrow)
 (customize-set-variable 'custom-safe-themes (quote ("06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" "628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" default)))
