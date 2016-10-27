@@ -17,4 +17,6 @@ mv .vimrc .vimrc~
 ln -sb dotfiles/.vimrc .
 mv .minttyrc .minttyrc~
 ln -sb dotfiles/.minttyrc .
+mv .tmux .tmux~
+ln -sb dotfiles/.tmux .
 ```
