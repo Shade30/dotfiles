@@ -19,6 +19,13 @@ set shiftwidth=4
 " other than the (hard)tabstop
 set softtabstop=4
 
+" replace tabs with spaces
+set expandtab
+
+" smartcase search
+set ignorecase
+set smartcase
+
 " scrolling other window
 "this function maps Alt-down and Alt-Up to move other window
 "" put in your ~/.vimrc
