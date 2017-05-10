@@ -37,6 +37,7 @@
                      scss-mode
                      markdown-mode
                      helm
+                     yasnippet
 					 ))
 
 (defun ensure-package-installed (&rest packages)
@@ -160,6 +161,19 @@ Return a list of installed packages or nil for every skipped package."
           (org-agenda-compact-blocks t)
           (org-agenda-remove-tags t))
          ("~/org/theagenda.html"))))
+
+;;; yasnippet
+(require 'yasnippet)
+(yas-reload-all)
+(add-hook 'prog-mode-hook #'yas-minor-mode)
+(defun yas/org-very-safe-expand ()
+  (let ((yas/fallback-behavior 'return-nil)) (yas/expand)))
+(add-hook 'org-mode-hook
+          (lambda ()
+            (make-variable-buffer-local 'yas/trigger-key)
+            (setq yas/trigger-key [tab])
+            (add-to-list 'org-tab-first-hook 'yas/org-very-safe-expand)
+            (define-key yas/keymap [tab] 'yas/next-field)))
 
 ;;; gntp alert for org-pomodoro
 (require 'alert)

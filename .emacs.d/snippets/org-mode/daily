@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: daily
+# key: daily
+# --
+* `(format-time-string "%Y-%m-%d")`
+Лог за сегодня: $0
