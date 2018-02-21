@@ -119,8 +119,8 @@ Return a list of installed packages or nil for every skipped package."
   (add-to-list 'default-frame-alist '(font . "Liberation Mono-11"))
 )
 
-;;; custom font - cygwin
-(when (system-is-cygwin)
+;;; custom font - cygwin and windows
+(when (or (system-is-cygwin) (system-is-windows))
   (set-face-attribute 'default nil :family "Consolas")
   (add-to-list 'default-frame-alist '(font . "Consolas-12"))
 )
