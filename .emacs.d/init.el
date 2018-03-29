@@ -43,6 +43,7 @@
                      flycheck
                      tide
                      company
+                     company-quickhelp
                      magit
                      evil-magit
                      ))
@@ -206,7 +207,8 @@ Return a list of installed packages or nil for every skipped package."
 
 ;;; company auto-complete
 (add-hook 'after-init-hook 'global-company-mode)
-(setq company-idle-delay nil) ; never start completions automatically
+(add-hook 'after-init-hook 'company-quickhelp-mode)
+(setq company-idle-delay 0.0)
 (global-set-key [C-tab] #'company-complete) ; use C-TAB as manual trigger
 (define-key evil-insert-state-map (kbd "C-SPC") #'company-complete)
 
