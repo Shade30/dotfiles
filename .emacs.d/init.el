@@ -14,6 +14,7 @@
 (setq package-list '(color-theme-sanityinc-tomorrow
                      idea-darkula-theme
 		     evil
+                     evil-collection
 		     goto-chg
 		     monokai-theme
 		     undo-tree
@@ -83,8 +84,12 @@ Return a list of installed packages or nil for every skipped package."
   (server-start))
 
 ;;; evil mode by default
+;; also enable evil-collection
+(setq evil-want-integration nil)
 (require 'evil)
 (evil-mode t)
+(when (require 'evil-collection nil t)
+  (evil-collection-init))
 
 ;;; ace jump mode
 (require 'ace-jump-mode)
@@ -337,6 +342,8 @@ Return a list of installed packages or nil for every skipped package."
 (setq company-tooltip-align-annotations t)
 
 (add-hook 'typescript-mode-hook #'setup-tide-mode)
+;; enable evil collection for tide
+(add-hook 'typescript-mode-hook 'evil-collection-tide-setup)
 
 ;;; custom mode for log viewing
 (define-derived-mode log4j-view-mode fundamental-mode
