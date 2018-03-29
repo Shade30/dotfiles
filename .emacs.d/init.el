@@ -12,6 +12,7 @@
 
 ;;; packages to install
 (setq package-list '(color-theme-sanityinc-tomorrow
+                     idea-darkula-theme
 		     evil
 		     goto-chg
 		     monokai-theme
@@ -38,7 +39,13 @@
                      markdown-mode
                      helm
                      yasnippet
-					 ))
+                     restclient
+                     flycheck
+                     tide
+                     company
+                     magit
+                     evil-magit
+                     ))
 
 (defun ensure-package-installed (&rest packages)
   "Assure every package is installed, ask for installation if it's not.
@@ -83,11 +90,11 @@ Return a list of installed packages or nil for every skipped package."
 (define-key global-map (kbd "C-;") 'ace-jump-mode)
 ;; evil-mode+ace-jump-mode bindings
 (define-key evil-motion-state-map (kbd "C-;") #'evil-ace-jump-char-mode)
-(define-key evil-motion-state-map (kbd "C-SPC") #'evil-ace-jump-word-mode)
+;; (define-key evil-motion-state-map (kbd "C-SPC") #'evil-ace-jump-word-mode)
 
 (define-key evil-operator-state-map (kbd "C-;") #'evil-ace-jump-char-mode) ; similar to f
-(define-key evil-operator-state-map (kbd "C-SPC") #'evil-ace-jump-char-to-mode) ; similar to t
-(define-key evil-operator-state-map (kbd "M-SPC") #'evil-ace-jump-word-mode)
+;; (define-key evil-operator-state-map (kbd "C-SPC") #'evil-ace-jump-char-to-mode) ; similar to t
+;; (define-key evil-operator-state-map (kbd "M-SPC") #'evil-ace-jump-word-mode)
 
 ;; different jumps for different visual modes
 (defadvice evil-visual-line (before spc-for-line-jump activate)
@@ -128,8 +135,8 @@ Return a list of installed packages or nil for every skipped package."
 
 ;;; custom color theme
 ;;(require 'color-theme-sanityinc-tomorrow)
-(customize-set-variable 'custom-safe-themes (quote ("06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" "628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" default)))
-(customize-set-variable 'custom-enabled-themes (quote (sanityinc-tomorrow-night)))
+(customize-set-variable 'custom-safe-themes (quote ("82b67c7e21c3b12be7b569af7c84ec0fb2d62105629a173e2479e1053cff94bd" "06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" "628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" default)))
+(customize-set-variable 'custom-enabled-themes (quote (idea-darkula)))
 
 ;;; hide splash screen
 (customize-set-variable 'inhibit-startup-screen t)
@@ -191,11 +198,21 @@ Return a list of installed packages or nil for every skipped package."
   (error
    (setq alert-default-style 'message)))
 
-;;; general auto-complete
-(require 'auto-complete-config)
-(setq ac-delay 0.0)
-(setq ac-quick-help-delay 0.5)
-(ac-config-default)
+;; ;;; general auto-complete
+;; (require 'auto-complete-config)
+;; (setq ac-delay 0.0)
+;; (setq ac-quick-help-delay 0.5)
+;; (ac-config-default)
+
+;;; company auto-complete
+(add-hook 'after-init-hook 'global-company-mode)
+(setq company-idle-delay nil) ; never start completions automatically
+(global-set-key [C-tab] #'company-complete) ; use C-TAB as manual trigger
+(define-key evil-insert-state-map (kbd "C-SPC") #'company-complete)
+
+;;; magit mode
+(require 'evil-magit)
+(global-set-key (kbd "C-x g") 'magit-status)
 
 ;;; clojure mode
 (add-hook 'clojure-mode-hook #'subword-mode)
@@ -203,15 +220,15 @@ Return a list of installed packages or nil for every skipped package."
 (add-hook 'clojure-mode-hook #'rainbow-delimiters-mode)
 (require 'cider-eval-sexp-fu)
 
-;;; cider autocomplete
-(require 'ac-cider)
-(add-hook 'cider-mode-hook 'ac-flyspell-workaround)
-(add-hook 'cider-mode-hook 'ac-cider-setup)
-(add-hook 'cider-repl-mode-hook 'ac-cider-setup)
-(eval-after-load "auto-complete"
-  '(progn
-     (add-to-list 'ac-modes 'cider-mode)
-     (add-to-list 'ac-modes 'cider-repl-mode)))
+;; ;;; cider autocomplete
+;; (require 'ac-cider)
+;; (add-hook 'cider-mode-hook 'ac-flyspell-workaround)
+;; (add-hook 'cider-mode-hook 'ac-cider-setup)
+;; (add-hook 'cider-repl-mode-hook 'ac-cider-setup)
+;; (eval-after-load "auto-complete"
+;;   '(progn
+;;      (add-to-list 'ac-modes 'cider-mode)
+;;      (add-to-list 'ac-modes 'cider-repl-mode)))
 
 ;;; clojure mode for org-babel
 (require 'ob-clojure)
@@ -303,6 +320,21 @@ Return a list of installed packages or nil for every skipped package."
 
 ;;; groovy mode
 (add-to-list 'auto-mode-alist '("\\.groovy\\'" . groovy-mode))
+
+;;; typescript
+(defun setup-tide-mode ()
+  (interactive)
+  (tide-setup)
+  (flycheck-mode +1)
+  (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  (eldoc-mode +1)
+  (tide-hl-identifier-mode +1)
+  (company-mode +1))
+
+;; aligns annotation to the right hand side
+(setq company-tooltip-align-annotations t)
+
+(add-hook 'typescript-mode-hook #'setup-tide-mode)
 
 ;;; custom mode for log viewing
 (define-derived-mode log4j-view-mode fundamental-mode
