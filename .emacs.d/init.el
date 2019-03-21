@@ -2,10 +2,12 @@
 (require 'package)
 
 ;;; here there's a variable named package-archives, and we are adding the MELPA repository to it
-(add-to-list 'package-archives '("marmalade" . "https://marmalade-repo.org/packages/"))
+;;(add-to-list 'package-archives '("marmalade" . "https://marmalade-repo.org/packages/"))
 (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/"))
+;;(add-to-list 'package-archives
+;;			 '("melpa-stable" . "http://stable.melpa.org/packages/") t)
 (add-to-list 'package-archives
-			 '("melpa" . "http://melpa.milkbox.net/packages/") t)
+			 '("melpa" . "http://melpa.org/packages/") t)
 
 ;;; loads packages and activates them
 (package-initialize)
@@ -20,7 +22,7 @@
 		     undo-tree
                      smooth-scrolling
 		     ace-jump-mode
-                     icicles
+                     ;;icicles
                      cider
                      clojure-mode
                      ac-cider
@@ -39,6 +41,7 @@
                      scss-mode
                      markdown-mode
                      helm
+                     helm-swoop
                      yasnippet
                      restclient
                      flycheck
@@ -47,6 +50,7 @@
                      company-quickhelp
                      magit
                      evil-magit
+                     secretaria
                      ))
 
 (defun ensure-package-installed (&rest packages)
@@ -85,7 +89,8 @@ Return a list of installed packages or nil for every skipped package."
 
 ;;; evil mode by default
 ;; also enable evil-collection
-(setq evil-want-integration nil)
+(setq evil-want-integration t)
+(setq evil-want-keybinding nil)
 (require 'evil)
 (evil-mode t)
 (when (require 'evil-collection nil t)
@@ -114,6 +119,8 @@ Return a list of installed packages or nil for every skipped package."
 
 ;;; projectile
 (projectile-global-mode)
+;; (define-key projectile-mode-map projectile-keymap-prefix nil)
+(define-key projectile-mode-map (kbd "M-p") #'projectile-command-map)
 
 ;; load in customizations
 (load "~/.emacs.d/init_customizations.el")
@@ -129,7 +136,7 @@ Return a list of installed packages or nil for every skipped package."
 ;;; custom font - linux
 (when (system-is-linux)
   (set-face-attribute 'default nil :family "Liberation Mono")
-  (add-to-list 'default-frame-alist '(font . "Liberation Mono-11"))
+  (add-to-list 'default-frame-alist '(font . "Liberation Mono-10.5"))
 )
 
 ;;; custom font - cygwin and windows
@@ -141,7 +148,7 @@ Return a list of installed packages or nil for every skipped package."
 
 ;;; custom color theme
 ;;(require 'color-theme-sanityinc-tomorrow)
-(customize-set-variable 'custom-safe-themes (quote ("82b67c7e21c3b12be7b569af7c84ec0fb2d62105629a173e2479e1053cff94bd" "06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" "628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" default)))
+(customize-set-variable 'custom-safe-themes (quote ("420689cc31d01fe04b8e3adef87b8838ff52faa169e69ca4e863143ae9f3a9f9" "e068203104e27ac7eeff924521112bfcd953a655269a8da660ebc150c97d0db8" default)))
 (customize-set-variable 'custom-enabled-themes (quote (idea-darkula)))
 
 ;;; hide splash screen
@@ -174,6 +181,10 @@ Return a list of installed packages or nil for every skipped package."
           (org-agenda-compact-blocks t)
           (org-agenda-remove-tags t))
          ("~/org/theagenda.html"))))
+
+;;; secretaria
+(require 'secretaria)
+(add-hook 'after-init-hook #'secretaria-unknown-time-always-remind-me)
 
 ;;; yasnippet
 (require 'yasnippet)
@@ -214,6 +225,7 @@ Return a list of installed packages or nil for every skipped package."
 (add-hook 'after-init-hook 'global-company-mode)
 (add-hook 'after-init-hook 'company-quickhelp-mode)
 (setq company-idle-delay 0.0)
+(setq company-dabbrev-downcase nil)
 (global-set-key [C-tab] #'company-complete) ; use C-TAB as manual trigger
 (define-key evil-insert-state-map (kbd "C-SPC") #'company-complete)
 
@@ -222,9 +234,11 @@ Return a list of installed packages or nil for every skipped package."
 (global-set-key (kbd "C-x g") 'magit-status)
 
 ;;; clojure mode
+(add-hook 'smartparens-enabled-hook #'evil-smartparens-mode)
 (add-hook 'clojure-mode-hook #'subword-mode)
 (add-hook 'clojure-mode-hook #'smartparens-strict-mode)
 (add-hook 'clojure-mode-hook #'rainbow-delimiters-mode)
+(add-hook 'clojure-mode-hook #'show-smartparens-mode)
 (require 'cider-eval-sexp-fu)
 
 ;; ;;; cider autocomplete
@@ -306,6 +320,34 @@ Return a list of installed packages or nil for every skipped package."
       helm-scroll-amount                    8 ; scroll 8 lines other window using M-<next>/M-<prior>
       helm-ff-file-name-history-use-recentf t)
 
+(require 'helm-swoop)
+
+;; helm-swoop keybindings
+(global-set-key (kbd "M-i") 'helm-swoop)
+(global-set-key (kbd "M-I") 'helm-swoop-back-to-last-point)
+(global-set-key (kbd "C-c M-i") 'helm-multi-swoop)
+(global-set-key (kbd "C-x M-i") 'helm-multi-swoop-all)
+
+;; When doing isearch, hand the word over to helm-swoop
+(define-key isearch-mode-map (kbd "M-i") 'helm-swoop-from-isearch)
+;; From helm-swoop to helm-multi-swoop-all
+(define-key helm-swoop-map (kbd "M-i") 'helm-multi-swoop-all-from-helm-swoop)
+;; When doing evil-search, hand the word over to helm-swoop
+(define-key evil-motion-state-map (kbd "M-i") 'helm-swoop-from-evil-search)
+
+;; Instead of helm-multi-swoop-all, you can also use helm-multi-swoop-current-mode
+(define-key helm-swoop-map (kbd "M-m") 'helm-multi-swoop-current-mode-from-helm-swoop)
+
+;; If nil, you can slightly boost invoke speed in exchange for text color
+(setq helm-swoop-speed-or-color t)
+
+;; helm-swoop fuzzy matching
+(setq helm-swoop-use-fuzzy-match t)
+
+;; Disable pre-input
+(setq helm-swoop-pre-input-function
+      (lambda () ""))
+
 (helm-mode 1)
 
 ;;; nyan mode
@@ -382,6 +424,28 @@ Version 2016-03-15"
 (add-hook 'scss-mode-hook 'xah-syntax-color-hex)
 (add-hook 'php-mode-hook 'xah-syntax-color-hex)
 (add-hook 'html-mode-hook 'xah-syntax-color-hex)
+
+;;; secretaria
+;; fix erroneous function
+(require 'secretaria)
+(defun secretaria-alert-due-appt ()
+  "Tell the user about due TODOs tasks."
+  (let ( (appts (secretaria-get-appt 'due)) )
+    (when (< 0 (length appts))
+      (alert (format "Due entries: %s" (length appts))
+             :title "Attention, boss!"
+             :severity 'high
+             :mode 'org-mode))))
+
+(defun secretaria-alert-unknown-time-appt ()
+  "Tell the user about tasks scheduled for today.
+Those tasks have no time of the day specified"
+  (let ( (appts (secretaria-get-appt 'unknown)))
+    (dolist (entry appts)
+      (alert "Task for today, time unspecified"
+             :title (or entry "(no title)")
+             :severity (secretaria--conditional-severity)
+             :mode 'org-mode))))
 
 ;;; load custom settings
 (setq custom-file "~/.emacs.d/init_custom.el")
