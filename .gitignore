@@ -64,4 +64,6 @@
 # Gem config
 !.gemrc
 
+# tridactyl config
+.tridactylrc
 

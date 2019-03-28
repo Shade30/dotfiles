@@ -19,4 +19,6 @@ mv .minttyrc .minttyrc~
 ln -sb dotfiles/.minttyrc .
 mv .tmux.conf .tmux.conf~
 ln -sb dotfiles/.tmux.conf .
+mv .tridactylrc .tridactylrc~
+ln -sb dotfiles/.tridactylrc .
 ```

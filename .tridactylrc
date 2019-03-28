@@ -1,0 +1,8 @@
+
+" Bind next/prev tab
+bind <A-k> tabprev
+bind <A-j> tabnext
+
+" Handy multiwindow/multitasking binds
+bind gd tabdetach
+bind gD composite tabduplicate | tabdetach
