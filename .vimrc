@@ -81,6 +81,9 @@ endif
 " easymotion
 let g:EasyMotion_smartcase = 1
 
+" airline
+let g:airline_powerline_fonts = 1
+
 " local .vimrc file
 if filereadable(glob("~/.vimrc.local")) 
 	source ~/.vimrc.local
