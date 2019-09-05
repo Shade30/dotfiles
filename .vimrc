@@ -52,13 +52,24 @@ nmap <silent> <M-Right> :call ScrollOtherWindow("right")<CR>
 nmap <silent> <C-M-Left> :call ScrollOtherWindow("leftHalf")<CR>
 nmap <silent> <C-M-Right> :call ScrollOtherWindow("rightHalf")<CR>
 
-" pathogen
-execute pathogen#infect()
+" vim-plug
+call plug#begin()
+
+Plug 'chriskempson/base16-vim'
+Plug 'scrooloose/nerdtree'
+Plug 'vim-syntastic/syntastic'
+Plug 'tpope/vim-abolish'
+Plug 'vim-airline/vim-airline'
+Plug 'easymotion/vim-easymotion'
+Plug 'tpope/vim-sensible'
+
+call plug#end()
+" need to run :PlugInstall
 
 " font
 if has('gui_running')
 	set guioptions-=T  " no toolbar
-	colorscheme base16-default-dark
+	silent! colorscheme base16-default-dark
 	set lines=60 columns=108 linespace=0
 	if has('gui_win32')
 		set guifont=Consolas:h12:cRUSSIAN
