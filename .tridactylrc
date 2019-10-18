@@ -6,3 +6,10 @@ bind <A-j> tabnext
 " Handy multiwindow/multitasking binds
 bind gd tabdetach
 bind gD composite tabduplicate | tabdetach
+
+" Bind find/find next
+bind / fillcmdline find
+bind ? fillcmdline find -?
+bind n findnext 1
+bind N findnext -1
+bind ,<Space> nohlsearch
