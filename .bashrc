@@ -110,11 +110,29 @@ if [ "$PS1" ]; then
     [ "$PS1" = "\\s-\\v\\\$ " ] && PS1="[\u \w]\\$ "
 
     if [ "x$SHLVL" != "x1" ]; then # We're not a login shell
+
+    # Arch Linux workaround: provide append_path API function to scripts in /etc/profile.d
+
+	# Append "$1" to $PATH when not already in.
+	# This function API is accessible to scripts in /etc/profile.d
+	append_path () {
+		case ":$PATH:" in
+			*:"$1":*)
+				;;
+			*)
+				PATH="${PATH:+$PATH:}$1"
+		esac
+	}
+
 	for i in /etc/profile.d/*.sh; do
 	    if [ -r "$i" ]; then
 		. $i
 	    fi
 	done
+
+	# Unload our profile API functions
+	unset -f append_path
+
     fi
 fi
 
