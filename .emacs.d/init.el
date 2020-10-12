@@ -15,6 +15,7 @@
 ;;; packages to install
 (setq package-list '(color-theme-sanityinc-tomorrow
                      idea-darkula-theme
+                     base16-theme
 		     evil
                      evil-collection
 		     goto-chg
@@ -135,8 +136,8 @@ Return a list of installed packages or nil for every skipped package."
 
 ;;; custom font - linux
 (when (system-is-linux)
-  (set-face-attribute 'default nil :family "Liberation Mono")
-  (add-to-list 'default-frame-alist '(font . "Liberation Mono-10.5"))
+  (set-face-attribute 'default nil :family "Hack")
+  (add-to-list 'default-frame-alist '(font . "Hack-12"))
 )
 
 ;;; custom font - cygwin and windows
@@ -148,8 +149,8 @@ Return a list of installed packages or nil for every skipped package."
 
 ;;; custom color theme
 ;;(require 'color-theme-sanityinc-tomorrow)
-(customize-set-variable 'custom-safe-themes (quote ("420689cc31d01fe04b8e3adef87b8838ff52faa169e69ca4e863143ae9f3a9f9" "e068203104e27ac7eeff924521112bfcd953a655269a8da660ebc150c97d0db8" default)))
-(customize-set-variable 'custom-enabled-themes (quote (idea-darkula)))
+(customize-set-variable 'custom-safe-themes (quote ("420689cc31d01fe04b8e3adef87b8838ff52faa169e69ca4e863143ae9f3a9f9" "e068203104e27ac7eeff924521112bfcd953a655269a8da660ebc150c97d0db8" "16dd114a84d0aeccc5ad6fd64752a11ea2e841e3853234f19dc02a7b91f5d661" default)))
+(customize-set-variable 'custom-enabled-themes (quote (base16-default-dark)))
 
 ;;; hide splash screen
 (customize-set-variable 'inhibit-startup-screen t)

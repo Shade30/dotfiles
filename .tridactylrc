@@ -1,4 +1,7 @@
 
+" Theme
+set theme dark
+
 " Bind next/prev tab
 bind <A-k> tabprev
 bind <A-j> tabnext
@@ -13,3 +16,7 @@ bind ? fillcmdline find -?
 bind n findnext 1
 bind N findnext -1
 bind ,<Space> nohlsearch
+
+" Bind F2 to help
+unbind <F1>
+bind <F2> help

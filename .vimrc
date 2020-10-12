@@ -80,9 +80,13 @@ endif
 
 " easymotion
 let g:EasyMotion_smartcase = 1
+nmap <C-;> <Plug>(easymotion-s)
 
 " airline
 let g:airline_powerline_fonts = 1
+
+" nerdtree mapping
+map <C-n> :NERDTreeToggle<CR>
 
 " local .vimrc file
 if filereadable(glob("~/.vimrc.local")) 
