@@ -39,6 +39,7 @@
                      projectile
                      cider-eval-sexp-fu
                      org-pomodoro
+                     org-trello
                      scss-mode
                      markdown-mode
                      helm
@@ -87,6 +88,15 @@ Return a list of installed packages or nil for every skipped package."
 (require 'server)
 (unless (server-running-p)
   (server-start))
+
+;;; backup files and auto-saves
+;; Don't clutter up directories with files~
+(setq backup-directory-alist `(("." . ,(expand-file-name
+                                         (concat user-emacs-directory "backups")))))
+
+;; Don't clutter with #files either
+(setq auto-save-file-name-transforms
+      `((".*" ,(expand-file-name (concat user-emacs-directory "backups")))))
 
 ;;; evil mode by default
 ;; also enable evil-collection
@@ -182,6 +192,19 @@ Return a list of installed packages or nil for every skipped package."
           (org-agenda-compact-blocks t)
           (org-agenda-remove-tags t))
          ("~/org/theagenda.html"))))
+
+;;; org-trello
+(require 'org-trello)                   ;
+;; org-trello major mode for all .trello files
+(add-to-list 'auto-mode-alist '("\\.trello$" . org-mode))
+
+;; add a hook function to check if this is trello file, then activate the org-trello minor mode.
+(add-hook 'org-mode-hook
+          (lambda ()
+            (let ((filename (buffer-file-name (current-buffer))))
+              (when (and filename (string= "trello" (file-name-extension filename)))
+              (org-trello-mode)))))
+
 
 ;;; secretaria
 (require 'secretaria)
