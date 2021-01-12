@@ -26,6 +26,9 @@ set expandtab
 set ignorecase
 set smartcase
 
+" no beep
+set visualbell
+
 " scrolling other window
 "this function maps Alt-down and Alt-Up to move other window
 "" put in your ~/.vimrc
