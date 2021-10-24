@@ -29,6 +29,14 @@ set smartcase
 " no beep
 set visualbell
 
+" set runtimepath on windows
+if has('win32') || has('win64')
+    set runtimepath-=~/vimfiles
+    set runtimepath^=~/.vim
+    set runtimepath-=~/vimfiles/after
+    set runtimepath+=~/.vim/after
+endif
+
 " scrolling other window
 "this function maps Alt-down and Alt-Up to move other window
 "" put in your ~/.vimrc
