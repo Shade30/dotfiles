@@ -63,6 +63,13 @@ nmap <silent> <M-Right> :call ScrollOtherWindow("right")<CR>
 nmap <silent> <C-M-Left> :call ScrollOtherWindow("leftHalf")<CR>
 nmap <silent> <C-M-Right> :call ScrollOtherWindow("rightHalf")<CR>
 
+" bootstrap vim-plug
+if empty(glob('~/.vim/autoload/plug.vim'))
+  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+        \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  autocmd VimEnter * PlugInstall | source $MYVIMRC
+endif
+
 " vim-plug
 call plug#begin()
 
@@ -73,6 +80,7 @@ Plug 'tpope/vim-abolish'
 Plug 'vim-airline/vim-airline'
 Plug 'easymotion/vim-easymotion'
 Plug 'tpope/vim-sensible'
+Plug 's3rvac/AutoFenc'
 
 call plug#end()
 " need to run :PlugInstall

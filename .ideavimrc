@@ -1,0 +1,10 @@
+set ignorecase
+set surround
+set easymotion
+set commentary
+set NERDTree
+set incsearch
+set hlsearch
+set scrolloff=4
+set number
+set ideajoin

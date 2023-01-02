@@ -32,8 +32,6 @@
 !.vim/*
 # But do ignore netrw history
 .vim/.netrwhist
-!.vim/autoload/*
-!.vim/autoload/*/*
 # Pathogen bundle stuff (WTB recursive gitignore excludes...)
 # e.g. .vim/bundle/<plugin>/syntax/special_syntax.vim
 # (Added a few more asterisks just to cover any deeper setups. Sigh.)

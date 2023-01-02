@@ -37,7 +37,7 @@
                      company
                      company-quickhelp
                      magit
-                     evil-magit
+                     ;;evil-magit
                      secretaria
                      ))
 
@@ -145,7 +145,7 @@ Return a list of installed packages or nil for every skipped package."
 
 ;;; custom color theme
 ;;(require 'color-theme-sanityinc-tomorrow)
-(customize-set-variable 'custom-safe-themes (quote ("420689cc31d01fe04b8e3adef87b8838ff52faa169e69ca4e863143ae9f3a9f9" "e068203104e27ac7eeff924521112bfcd953a655269a8da660ebc150c97d0db8" "16dd114a84d0aeccc5ad6fd64752a11ea2e841e3853234f19dc02a7b91f5d661" default)))
+(customize-set-variable 'custom-safe-themes (quote ("cfce7968302b78671dca1e940b5d5f38f997df79c85b16dc2886e7b735f00798" "5a04c3d580e08f5fc8b3ead2ed66e2f0e5d93643542eec414f0836b971806ba9" "16dd114a84d0aeccc5ad6fd64752a11ea2e841e3853234f19dc02a7b91f5d661" "420689cc31d01fe04b8e3adef87b8838ff52faa169e69ca4e863143ae9f3a9f9" "e068203104e27ac7eeff924521112bfcd953a655269a8da660ebc150c97d0db8" default)))
 (customize-set-variable 'custom-enabled-themes (quote (base16-default-dark)))
 
 ;;; hide splash screen
@@ -239,9 +239,9 @@ Return a list of installed packages or nil for every skipped package."
 (global-set-key [C-tab] #'company-complete) ; use C-TAB as manual trigger
 (define-key evil-insert-state-map (kbd "C-SPC") #'company-complete)
 
-;;; magit mode
-(require 'evil-magit)
-(global-set-key (kbd "C-x g") 'magit-status)
+;; ;;; magit mode
+;; (require 'evil-magit)
+;; (global-set-key (kbd "C-x g") 'magit-status)
 
 ;;; clojure mode
 (add-hook 'smartparens-enabled-hook #'evil-smartparens-mode)
@@ -277,7 +277,7 @@ Return a list of installed packages or nil for every skipped package."
 (require 'whitespace)
 (require 'dired-x)
 (require 'compile)
-(menu-bar-mode -1)
+(tool-bar-mode -1)
 (normal-erase-is-backspace-mode 1)
 (put 'downcase-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
