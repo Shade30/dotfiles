@@ -92,6 +92,8 @@ Return a list of installed packages or nil for every skipped package."
 (evil-mode t)
 (when (require 'evil-collection nil t)
   (evil-collection-init))
+;; enable undo-redo
+(evil-set-undo-system 'undo-redo)
 
 ;;; ace jump mode
 (require 'ace-jump-mode)
@@ -145,7 +147,7 @@ Return a list of installed packages or nil for every skipped package."
 
 ;;; custom color theme
 ;;(require 'color-theme-sanityinc-tomorrow)
-(customize-set-variable 'custom-safe-themes (quote ("cfce7968302b78671dca1e940b5d5f38f997df79c85b16dc2886e7b735f00798" "5a04c3d580e08f5fc8b3ead2ed66e2f0e5d93643542eec414f0836b971806ba9" "16dd114a84d0aeccc5ad6fd64752a11ea2e841e3853234f19dc02a7b91f5d661" "420689cc31d01fe04b8e3adef87b8838ff52faa169e69ca4e863143ae9f3a9f9" "e068203104e27ac7eeff924521112bfcd953a655269a8da660ebc150c97d0db8" default)))
+(customize-set-variable 'custom-safe-themes (quote ("f700bc979515153bef7a52ca46a62c0aa519950cc06d539df4f3d38828944a2c" "cfce7968302b78671dca1e940b5d5f38f997df79c85b16dc2886e7b735f00798" "5a04c3d580e08f5fc8b3ead2ed66e2f0e5d93643542eec414f0836b971806ba9" "16dd114a84d0aeccc5ad6fd64752a11ea2e841e3853234f19dc02a7b91f5d661" "420689cc31d01fe04b8e3adef87b8838ff52faa169e69ca4e863143ae9f3a9f9" "e068203104e27ac7eeff924521112bfcd953a655269a8da660ebc150c97d0db8" default)))
 (customize-set-variable 'custom-enabled-themes (quote (base16-default-dark)))
 
 ;;; hide splash screen
@@ -304,7 +306,6 @@ Return a list of installed packages or nil for every skipped package."
 
 ;;; helm
 (require 'helm)
-(require 'helm-config)
 
 ;; The default "C-x c" is quite close to "C-x C-c", which quits Emacs.
 ;; Changed to "C-c h". Note: We must set "C-c h" globally, because we

@@ -8,3 +8,6 @@ set hlsearch
 set scrolloff=4
 set number
 set ideajoin
+
+set quickscope
+let g:qs_highlight_on_keys = ['f', 'F', 't', 'T']
