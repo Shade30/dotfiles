@@ -2,13 +2,13 @@
 (setq package-list '(color-theme-sanityinc-tomorrow
                      idea-darkula-theme
                      base16-theme
-		     evil
+                     evil
                      evil-collection
-		     goto-chg
-		     monokai-theme
-		     undo-tree
+                     goto-chg
+                     monokai-theme
+                     undo-tree
                      smooth-scrolling
-		     ace-jump-mode
+                     ace-jump-mode
                      ;;icicles
                      cider
                      clojure-mode
@@ -206,6 +206,7 @@ Return a list of installed packages or nil for every skipped package."
   (let ((yas/fallback-behavior 'return-nil)) (yas/expand)))
 (add-hook 'org-mode-hook
           (lambda ()
+            (yas-minor-mode)
             (make-variable-buffer-local 'yas/trigger-key)
             (setq yas/trigger-key [tab])
             (add-to-list 'org-tab-first-hook 'yas/org-very-safe-expand)
@@ -220,8 +221,8 @@ Return a list of installed packages or nil for every skipped package."
 
 (condition-case nil
   (let ((notifications
-	 `((alert
-	    :enabled t))))
+         `((alert
+            :enabled t))))
     (gntp-register notifications gntp-server)
     (setq alert-default-style 'gntp))
   (error
