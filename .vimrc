@@ -81,6 +81,8 @@ Plug 'vim-airline/vim-airline'
 Plug 'easymotion/vim-easymotion'
 Plug 'tpope/vim-sensible'
 Plug 's3rvac/AutoFenc'
+Plug 'inkarkat/vim-ReplaceWithRegister'
+Plug 'vim-scripts/argtextobj.vim'
 
 call plug#end()
 " need to run :PlugInstall

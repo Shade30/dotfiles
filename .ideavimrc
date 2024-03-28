@@ -3,6 +3,8 @@ set surround
 set easymotion
 set commentary
 set NERDTree
+set ReplaceWithRegister
+set argtextobj
 set incsearch
 set hlsearch
 set scrolloff=4
