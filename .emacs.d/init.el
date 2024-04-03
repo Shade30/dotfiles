@@ -4,6 +4,7 @@
                      base16-theme
                      evil
                      evil-collection
+                     evil-replace-with-register
                      goto-chg
                      monokai-theme
                      undo-tree
@@ -94,6 +95,9 @@ Return a list of installed packages or nil for every skipped package."
   (evil-collection-init))
 ;; enable undo-redo
 (evil-set-undo-system 'undo-redo)
+;; enable evil-replace-with-register
+(require 'evil-replace-with-register)
+(evil-replace-with-register-install)
 
 ;;; ace jump mode
 (require 'ace-jump-mode)
