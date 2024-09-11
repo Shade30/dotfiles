@@ -322,9 +322,12 @@ Those tasks have no time of the day specified"
   :ensure t
   :defer t)
 
-;; (use-package clj-refactor
-;;   :ensure t
-;;   :defer t)
+(use-package inflections
+  :ensure (:version (lambda (_) "2.6")))
+
+(use-package clj-refactor
+  :ensure t
+  :defer t)
 
 ;;; cider autocomplete
 ;; (use-package ac-cider
