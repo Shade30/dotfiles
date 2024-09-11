@@ -1,69 +1,59 @@
-;;; packages to install
-(setq package-list '(color-theme-sanityinc-tomorrow
-                     idea-darkula-theme
-                     base16-theme
-                     evil
-                     evil-collection
-                     evil-replace-with-register
-                     goto-chg
-                     monokai-theme
-                     undo-tree
-                     smooth-scrolling
-                     ace-jump-mode
-                     cider
-                     clojure-mode
-                     ac-cider
-                     auto-complete
-                     nyan-mode
-                     htmlize
-                     groovy-mode
-                     rainbow-delimiters
-                     smartparens
-                     evil-smartparens
-                     clj-refactor
-                     projectile
-                     cider-eval-sexp-fu
-                     org-pomodoro
-                     org-trello
-                     scss-mode
-                     markdown-mode
-                     helm
-                     helm-swoop
-                     yasnippet
-                     restclient
-                     flycheck
-                     tide
-                     company
-                     company-quickhelp
-                     magit
-                     ;;evil-magit
-                     secretaria
-                     ))
+;; system-type definition
+(defun system-is-linux()
+  (string-equal system-type "gnu/linux"))
+(defun system-is-windows()
+  (string-equal system-type "windows-nt"))
+(defun system-is-cygwin()
+  (string-equal system-type "cygwin"))
 
-(defun ensure-package-installed (&rest packages)
-  "Assure every package is installed, ask for installation if it's not.
+;;; elpaca
+(defvar elpaca-installer-version 0.7)
+(defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
+(defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
+(defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
+(defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
+                              :ref nil :depth 1
+                              :files (:defaults "elpaca-test.el" (:exclude "extensions"))
+                              :build (:not elpaca--activate-package)))
+(let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
+       (build (expand-file-name "elpaca/" elpaca-builds-directory))
+       (order (cdr elpaca-order))
+       (default-directory repo))
+  (add-to-list 'load-path (if (file-exists-p build) build repo))
+  (unless (file-exists-p repo)
+    (make-directory repo t)
+    (when (< emacs-major-version 28) (require 'subr-x))
+    (condition-case-unless-debug err
+        (if-let ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                 ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
+                                                 ,@(when-let ((depth (plist-get order :depth)))
+                                                     (list (format "--depth=%d" depth) "--no-single-branch"))
+                                                 ,(plist-get order :repo) ,repo))))
+                 ((zerop (call-process "git" nil buffer t "checkout"
+                                       (or (plist-get order :ref) "--"))))
+                 (emacs (concat invocation-directory invocation-name))
+                 ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                       "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                 ((require 'elpaca))
+                 ((elpaca-generate-autoloads "elpaca" repo)))
+            (progn (message "%s" (buffer-string)) (kill-buffer buffer))
+          (error "%s" (with-current-buffer buffer (buffer-string))))
+      ((error) (warn "%s" err) (delete-directory repo 'recursive))))
+  (unless (require 'elpaca-autoloads nil t)
+    (require 'elpaca)
+    (elpaca-generate-autoloads "elpaca" repo)
+    (load "./elpaca-autoloads")))
+(add-hook 'after-init-hook #'elpaca-process-queues)
+(elpaca `(,@elpaca-order))
 
-Return a list of installed packages or nil for every skipped package."
-  (mapcar
-   (lambda (package)
-     ;; (package-installed-p 'evil)
-     (if (package-installed-p package)
-         nil
-       (if (y-or-n-p (format "Package %s is missing. Install it? " package))
-           (package-install package)
-         package)))
-   packages))
+;; disable symlinks on windows
+(when (system-is-windows)
+  (elpaca-no-symlink-mode))
 
-;; make sure to have downloaded archive description.
-;; Or use package-archive-contents as suggested by Nicolas Dudebout
-(or (file-exists-p package-user-dir)
-    (package-refresh-contents))
-
-(dolist (package package-list)
-  (ensure-package-installed package)) ;  --> (nil nil) if iedit and magit are already installed
-
-;;; loads packages and activates them
-(package-initialize)
+;; install use-package support
+(elpaca elpaca-use-package
+  ;; enable use-package :ensure support for elpaca
+  (elpaca-use-package-mode))
 
 ;;; Save emacs sessions
 (desktop-save-mode 1)
@@ -96,56 +86,54 @@ Return a list of installed packages or nil for every skipped package."
 ;; Show bent arrow in the window fringe to distinguish visual lines
 (setq visual-line-fringe-indicators '(left-curly-arrow right-curly-arrow))
 
-;;; evil mode by default
-;; also enable evil-collection
-(setq evil-want-integration t)
-(setq evil-want-keybinding nil)
-(require 'evil)
-(evil-mode t)
-(when (require 'evil-collection nil t)
+;;; evil mode
+(use-package evil
+  :ensure t
+  :init
+  (setq evil-want-integration t)
+  (setq evil-want-keybinding nil)
+  (setq evil-want-C-i-jump nil)
+
+  :config
+  (evil-mode t))
+
+(use-package undo-tree
+  :ensure t
+  :config
+  (evil-set-undo-system 'undo-redo))
+
+(use-package evil-collection
+  :ensure t
+  :init
   (evil-collection-init))
-;; enable undo-redo
-(evil-set-undo-system 'undo-redo)
-;; enable evil-replace-with-register
-(require 'evil-replace-with-register)
-(evil-replace-with-register-install)
 
-;;; ace jump mode
-(require 'ace-jump-mode)
-(define-key global-map (kbd "C-;") 'ace-jump-mode)
-;; evil-mode+ace-jump-mode bindings
-(define-key evil-motion-state-map (kbd "C-;") #'evil-ace-jump-char-mode)
-;; (define-key evil-motion-state-map (kbd "C-SPC") #'evil-ace-jump-word-mode)
+(use-package evil-replace-with-register
+  :ensure t
+  :init
+  (evil-replace-with-register-install))
 
-(define-key evil-operator-state-map (kbd "C-;") #'evil-ace-jump-char-mode) ; similar to f
-;; (define-key evil-operator-state-map (kbd "C-SPC") #'evil-ace-jump-char-to-mode) ; similar to t
-;; (define-key evil-operator-state-map (kbd "M-SPC") #'evil-ace-jump-word-mode)
+;; goto-chg - goto last change in current buffer
+;; bound to g;
+(use-package goto-chg
+  :ensure t)
 
-;; different jumps for different visual modes
-(defadvice evil-visual-line (before spc-for-line-jump activate)
-(define-key evil-motion-state-map (kbd "C-;") #'evil-ace-jump-line-mode))
-
-(defadvice evil-visual-char (before spc-for-char-jump activate)
-(define-key evil-motion-state-map (kbd "C-;") #'evil-ace-jump-char-mode))
-
-(defadvice evil-visual-block (before spc-for-char-jump activate)
-(define-key evil-motion-state-map (kbd "C-;") #'evil-ace-jump-char-mode))
+;;; avy
+(use-package avy
+  :ensure t
+  :config
+  (global-set-key (kbd "C-;") 'avy-goto-char))
 
 ;;; projectile
-(projectile-global-mode)
-;; (define-key projectile-mode-map projectile-keymap-prefix nil)
-(define-key projectile-mode-map (kbd "M-p") #'projectile-command-map)
+(use-package projectile
+  :ensure t
+  :config
+  (projectile-global-mode)
+
+  ;; (define-key projectile-mode-map projectile-keymap-prefix nil)
+  (define-key projectile-mode-map (kbd "M-p") #'projectile-command-map))
 
 ;; load in customizations
 (load "~/.emacs.d/init_customizations.el")
-
-;;; system-type definition
-(defun system-is-linux()
-    (string-equal system-type "gnu/linux"))
-(defun system-is-windows()
-    (string-equal system-type "windows-nt"))
-(defun system-is-cygwin()
-    (string-equal system-type "cygwin"))
 
 ;;; custom font - linux
 (when (system-is-linux)
@@ -159,11 +147,19 @@ Return a list of installed packages or nil for every skipped package."
   (add-to-list 'default-frame-alist '(font . "Consolas-12"))
 )
   
-
-;;; custom color theme
-;;(require 'color-theme-sanityinc-tomorrow)
-(customize-set-variable 'custom-safe-themes (quote ("f700bc979515153bef7a52ca46a62c0aa519950cc06d539df4f3d38828944a2c" "cfce7968302b78671dca1e940b5d5f38f997df79c85b16dc2886e7b735f00798" "5a04c3d580e08f5fc8b3ead2ed66e2f0e5d93643542eec414f0836b971806ba9" "16dd114a84d0aeccc5ad6fd64752a11ea2e841e3853234f19dc02a7b91f5d661" "420689cc31d01fe04b8e3adef87b8838ff52faa169e69ca4e863143ae9f3a9f9" "e068203104e27ac7eeff924521112bfcd953a655269a8da660ebc150c97d0db8" default)))
-(customize-set-variable 'custom-enabled-themes (quote (base16-default-dark)))
+;;; color themes
+(use-package color-theme-sanityinc-tomorrow
+  :ensure t
+  :config
+  (customize-set-variable 'custom-safe-themes (quote ("04aa1c3ccaee1cc2b93b246c6fbcd597f7e6832a97aaeac7e5891e6863236f9f" default)))
+  (customize-set-variable 'custom-enabled-themes (quote (sanityinc-tomorrow-eighties)))
+  (load-theme 'sanityinc-tomorrow-eighties t))
+;(use-package idea-darkula-theme
+;  :ensure t)
+;(use-package base16-theme
+;  :ensure t)
+;(use-package monokai-theme
+;  :ensure t)
 
 ;;; hide splash screen
 (customize-set-variable 'inhibit-startup-screen t)
@@ -197,87 +193,152 @@ Return a list of installed packages or nil for every skipped package."
          ("~/org/theagenda.html"))))
 
 ;;; org-trello
-(require 'org-trello)                   ;
-;; org-trello major mode for all .trello files
-(add-to-list 'auto-mode-alist '("\\.trello$" . org-mode))
+(use-package org-trello
+  :ensure t
+  ;; org-trello major mode for all .trello files
+  :mode ("\\.trello$" . org-mode)
 
-;; add a hook function to check if this is trello file, then activate the org-trello minor mode.
-(add-hook 'org-mode-hook
-          (lambda ()
-            (let ((filename (buffer-file-name (current-buffer))))
-              (when (and filename (string= "trello" (file-name-extension filename)))
-              (org-trello-mode)))))
-
+  :init
+  ;; add a hook function to check if this is trello file, then activate the org-trello minor mode.
+  (add-hook 'org-mode-hook
+            (lambda ()
+              (let ((filename (buffer-file-name (current-buffer))))
+                (when (and filename (string= "trello" (file-name-extension filename)))
+                  (org-trello-mode))))))
 
 ;;; secretaria
-(require 'secretaria)
-(add-hook 'after-init-hook #'secretaria-unknown-time-always-remind-me)
+(use-package secretaria
+  :ensure t
+  :init
+  (add-hook 'after-init-hook #'secretaria-unknown-time-always-remind-me)
+
+  ;; fix erroneous function
+  (require 'secretaria)
+  (defun secretaria-alert-due-appt ()
+    "Tell the user about due TODOs tasks."
+    (let ( (appts (secretaria-get-appt 'due)) )
+      (when (< 0 (length appts))
+        (alert (format "Due entries: %s" (length appts))
+               :title "Attention, boss!"
+               :severity 'high
+               :mode 'org-mode))))
+
+  (defun secretaria-alert-unknown-time-appt ()
+    "Tell the user about tasks scheduled for today.
+Those tasks have no time of the day specified"
+    (let ( (appts (secretaria-get-appt 'unknown)))
+      (dolist (entry appts)
+        (alert "Task for today, time unspecified"
+               :title (or entry "(no title)")
+               :severity (secretaria--conditional-severity)
+               :mode 'org-mode)))))
 
 ;;; yasnippet
-(require 'yasnippet)
-(yas-reload-all)
-(add-hook 'prog-mode-hook #'yas-minor-mode)
-(defun yas/org-very-safe-expand ()
-  (let ((yas/fallback-behavior 'return-nil)) (yas/expand)))
-(add-hook 'org-mode-hook
-          (lambda ()
-            (yas-minor-mode)
-            (make-variable-buffer-local 'yas/trigger-key)
-            (setq yas/trigger-key [tab])
-            (add-to-list 'org-tab-first-hook 'yas/org-very-safe-expand)
-            (define-key yas/keymap [tab] 'yas/next-field)))
+(use-package yasnippet
+  :ensure t
+  :init
+  (add-hook 'prog-mode-hook #'yas-minor-mode)
+  (add-hook 'org-mode-hook
+            (lambda ()
+              (yas-minor-mode)
+              (make-variable-buffer-local 'yas/trigger-key)
+              (setq yas/trigger-key [tab])
+              (add-to-list 'org-tab-first-hook 'yas/org-very-safe-expand)
+              (define-key yas/keymap [tab] 'yas/next-field)))
+  (defun yas/org-very-safe-expand ()
+    (let ((yas/fallback-behavior 'return-nil)) (yas/expand)))
 
-;;; gntp alert for org-pomodoro
-(require 'alert)
-(require 'gntp)
+  :config
+  (yas-reload-all))
 
-(setq alert-fade-time 10)
-(setq gntp-server "localhost")
+;;; org-pomodoro
+(use-package org-pomodoro
+  :ensure t)
 
-(condition-case nil
-  (let ((notifications
-         `((alert
-            :enabled t))))
-    (gntp-register notifications gntp-server)
-    (setq alert-default-style 'gntp))
-  (error
-   (setq alert-default-style 'message)))
-
-;; ;;; general auto-complete
-;; (require 'auto-complete-config)
-;; (setq ac-delay 0.0)
-;; (setq ac-quick-help-delay 0.5)
-;; (ac-config-default)
+;;; general auto-complete
+;; (use-package auto-complete
+;;   :ensure t
+;;   :init
+;;   (setq ac-delay 0.0)
+;;   (setq ac-quick-help-delay 0.5)
+;; 
+;;   :config
+;;   (ac-config-default))
 
 ;;; company auto-complete
-(add-hook 'after-init-hook 'global-company-mode)
-(add-hook 'after-init-hook 'company-quickhelp-mode)
-(setq company-idle-delay 0.0)
-(setq company-dabbrev-downcase nil)
-(global-set-key [C-tab] #'company-complete) ; use C-TAB as manual trigger
-(define-key evil-insert-state-map (kbd "C-SPC") #'company-complete)
+(use-package company
+  :ensure t
+  :defer t
+  :init
+  (add-hook 'after-init-hook 'global-company-mode)
+  (add-hook 'after-init-hook 'company-quickhelp-mode)
+  (setq company-idle-delay 0.0)
+  (setq company-dabbrev-downcase nil)
+  (global-set-key [C-tab] #'company-complete) ; use C-TAB as manual trigger
+  (define-key evil-insert-state-map (kbd "C-SPC") #'company-complete))
 
-;; ;;; magit mode
-;; (require 'evil-magit)
-;; (global-set-key (kbd "C-x g") 'magit-status)
+(use-package company-quickhelp
+  :ensure t)
+
+;;; magit mode
+(use-package transient
+  :ensure t)
+
+(use-package magit
+  :ensure t)
+
+;; (use-package evil-magit
+;;   :ensure t
+;;   :init
+;;   (global-set-key (kbd "C-x g") 'magit-status))
+
+;;; smartparens
+(use-package smartparens
+  :ensure t
+  :config
+  (use-package smartparens-config))
+
+(use-package evil-smartparens
+  :ensure t)
+
+(use-package rainbow-delimiters
+  :ensure t)
 
 ;;; clojure mode
-(add-hook 'smartparens-enabled-hook #'evil-smartparens-mode)
-(add-hook 'clojure-mode-hook #'subword-mode)
-(add-hook 'clojure-mode-hook #'smartparens-strict-mode)
-(add-hook 'clojure-mode-hook #'rainbow-delimiters-mode)
-(add-hook 'clojure-mode-hook #'show-smartparens-mode)
-(require 'cider-eval-sexp-fu)
+(use-package clojure-mode
+  :ensure t
+  :init
+  (add-hook 'smartparens-enabled-hook #'evil-smartparens-mode)
+  (add-hook 'clojure-mode-hook #'subword-mode)
+  (add-hook 'clojure-mode-hook #'smartparens-strict-mode)
+  (add-hook 'clojure-mode-hook #'rainbow-delimiters-mode)
+  (add-hook 'clojure-mode-hook #'show-smartparens-mode))
 
-;; ;;; cider autocomplete
-;; (require 'ac-cider)
-;; (add-hook 'cider-mode-hook 'ac-flyspell-workaround)
-;; (add-hook 'cider-mode-hook 'ac-cider-setup)
-;; (add-hook 'cider-repl-mode-hook 'ac-cider-setup)
-;; (eval-after-load "auto-complete"
-;;   '(progn
-;;      (add-to-list 'ac-modes 'cider-mode)
-;;      (add-to-list 'ac-modes 'cider-repl-mode)))
+(use-package cider
+  :ensure t
+  :defer t)
+
+(use-package cider-eval-sexp-fu
+  :ensure t
+  :defer t)
+
+;; (use-package clj-refactor
+;;   :ensure t
+;;   :defer t)
+
+;;; cider autocomplete
+;; (use-package ac-cider
+;;   :ensure t
+;;   :init
+;;   (add-hook 'cider-mode-hook 'ac-flyspell-workaround)
+;;   (add-hook 'cider-mode-hook 'ac-cider-setup)
+;;   (add-hook 'cider-repl-mode-hook 'ac-cider-setup)
+;; 
+;;   :config
+;;   (eval-after-load "auto-complete"
+;;     '(progn
+;;        (add-to-list 'ac-modes 'cider-mode)
+;;        (add-to-list 'ac-modes 'cider-repl-mode))))
 
 ;;; clojure mode for org-babel
 (require 'ob-clojure)
@@ -285,12 +346,13 @@ Return a list of installed packages or nil for every skipped package."
 
 ;;; from mooc
 ;;; global settings
-(require 'cl)
-(require 'ffap)
+;;(require 'cl)
+;;(require 'ffap) ; find file at point
 (require 'uniquify)
 (require 'ansi-color)
 (require 'recentf)
-(require 'smooth-scrolling)
+(use-package smooth-scrolling
+  :ensure t)
 (require 'whitespace)
 (require 'dired-x)
 (require 'compile)
@@ -309,71 +371,83 @@ Return a list of installed packages or nil for every skipped package."
 (setq-default whitespace-style '(tabs spaces trailing lines space-before-tab newline indentation:space empty space-after-tab space-mark tab-mark newline-mark))
 
 ;;; helm
-(require 'helm)
+(use-package helm
+  :ensure t
+  :defer t
+  :init
+  ;; The default "C-x c" is quite close to "C-x C-c", which quits Emacs.
+  ;; Changed to "C-c h". Note: We must set "C-c h" globally, because we
+  ;; cannot change `helm-command-prefix-key' once `helm-config' is loaded.
+  (global-set-key (kbd "C-c h") 'helm-command-prefix)
+  (global-unset-key (kbd "C-x c"))
 
-;; The default "C-x c" is quite close to "C-x C-c", which quits Emacs.
-;; Changed to "C-c h". Note: We must set "C-c h" globally, because we
-;; cannot change `helm-command-prefix-key' once `helm-config' is loaded.
-(global-set-key (kbd "C-c h") 'helm-command-prefix)
-(global-unset-key (kbd "C-x c"))
+  ;; Helm's generic functions
+  (global-set-key (kbd "M-x") #'helm-M-x)
+  (global-set-key (kbd "C-x r b") #'helm-filtered-bookmarks)
+  (global-set-key (kbd "C-x C-f") #'helm-find-files)
 
-;; Helm's generic functions
-(global-set-key (kbd "M-x") #'helm-M-x)
-(global-set-key (kbd "C-x r b") #'helm-filtered-bookmarks)
-(global-set-key (kbd "C-x C-f") #'helm-find-files)
+  (when (executable-find "curl")
+    (setq helm-google-suggest-use-curl-p t))
 
-(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
-(define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
-(define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
+  (setq helm-split-window-in-side-p           t ; open helm buffer inside current window, not occupy whole other window
+        helm-move-to-line-cycle-in-source     t ; move to end or beginning of source when reaching top or bottom of source.
+        helm-ff-search-library-in-sexp        t ; search for library in `require' and `declare-function' sexp.
+        helm-scroll-amount                    8 ; scroll 8 lines other window using M-<next>/M-<prior>
+        helm-ff-file-name-history-use-recentf t)
+  :config
+  (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
+  (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
+  (define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
 
-(when (executable-find "curl")
-  (setq helm-google-suggest-use-curl-p t))
+  (helm-mode 1))
 
-(setq helm-split-window-in-side-p           t ; open helm buffer inside current window, not occupy whole other window
-      helm-move-to-line-cycle-in-source     t ; move to end or beginning of source when reaching top or bottom of source.
-      helm-ff-search-library-in-sexp        t ; search for library in `require' and `declare-function' sexp.
-      helm-scroll-amount                    8 ; scroll 8 lines other window using M-<next>/M-<prior>
-      helm-ff-file-name-history-use-recentf t)
+(use-package helm-swoop
+  :ensure t
+  :init
+  ;; helm-swoop keybindings
+  (global-set-key (kbd "M-i") 'helm-swoop)
+  (global-set-key (kbd "M-I") 'helm-swoop-back-to-last-point)
+  (global-set-key (kbd "C-c M-i") 'helm-multi-swoop)
+  (global-set-key (kbd "C-x M-i") 'helm-multi-swoop-all)
 
-(require 'helm-swoop)
+  ;; If nil, you can slightly boost invoke speed in exchange for text color
+  (setq helm-swoop-speed-or-color t)
 
-;; helm-swoop keybindings
-(global-set-key (kbd "M-i") 'helm-swoop)
-(global-set-key (kbd "M-I") 'helm-swoop-back-to-last-point)
-(global-set-key (kbd "C-c M-i") 'helm-multi-swoop)
-(global-set-key (kbd "C-x M-i") 'helm-multi-swoop-all)
+  ;; helm-swoop fuzzy matching
+  (setq helm-swoop-use-fuzzy-match t)
 
-;; When doing isearch, hand the word over to helm-swoop
-(define-key isearch-mode-map (kbd "M-i") 'helm-swoop-from-isearch)
-;; From helm-swoop to helm-multi-swoop-all
-(define-key helm-swoop-map (kbd "M-i") 'helm-multi-swoop-all-from-helm-swoop)
-;; When doing evil-search, hand the word over to helm-swoop
-(define-key evil-motion-state-map (kbd "M-i") 'helm-swoop-from-evil-search)
+  ;; Disable pre-input
+  (setq helm-swoop-pre-input-function
+        (lambda () ""))
 
-;; Instead of helm-multi-swoop-all, you can also use helm-multi-swoop-current-mode
-(define-key helm-swoop-map (kbd "M-m") 'helm-multi-swoop-current-mode-from-helm-swoop)
+  :config
+  ;; When doing isearch, hand the word over to helm-swoop
+  (define-key isearch-mode-map (kbd "M-i") 'helm-swoop-from-isearch)
+  ;; From helm-swoop to helm-multi-swoop-all
+  (define-key helm-swoop-map (kbd "M-i") 'helm-multi-swoop-all-from-helm-swoop)
+  ;; When doing evil-search, hand the word over to helm-swoop
+  (define-key evil-motion-state-map (kbd "M-i") 'helm-swoop-from-evil-search)
 
-;; If nil, you can slightly boost invoke speed in exchange for text color
-(setq helm-swoop-speed-or-color t)
-
-;; helm-swoop fuzzy matching
-(setq helm-swoop-use-fuzzy-match t)
-
-;; Disable pre-input
-(setq helm-swoop-pre-input-function
-      (lambda () ""))
-
-(helm-mode 1)
+  ;; Instead of helm-multi-swoop-all, you can also use helm-multi-swoop-current-mode
+  (define-key helm-swoop-map (kbd "M-m") 'helm-multi-swoop-current-mode-from-helm-swoop))
 
 ;;; nyan mode
-(if window-system (nyan-mode t))
-      
-;;; with animation - buggy
-;; (if window-system
-;;     (progn
-;;       (nyan-mode t)
-;;       (setq nyan-wavy-trail t)
-;;       (nyan-start-animation)))
+(use-package nyan-mode
+  :ensure t
+  :config
+  (nyan-mode t)
+  
+  ;; ;; with animation - buggy
+  ;; (if window-system
+  ;;     (progn
+  ;;       (nyan-mode t)
+  ;;       (setq nyan-wavy-trail t)
+  ;;         (nyan-start-animation)))
+  )
+
+;;; htmlize - Convert buffer text and decorations to HTML
+(use-package htmlize
+  :ensure t)
 
 ;;; hide ^M in logs
 (defun remove-dos-eol ()
@@ -383,9 +457,26 @@ Return a list of installed packages or nil for every skipped package."
   (aset buffer-display-table ?\^M []))
 
 ;;; groovy mode
-(add-to-list 'auto-mode-alist '("\\.groovy\\'" . groovy-mode))
+(use-package groovy-mode
+  :ensure t
+  :mode "\\.groovy\\'")
+
+(use-package scss-mode
+  :ensure t)
+
+(use-package markdown-mode
+  :ensure t)
+
+(use-package restclient
+  :ensure t)
 
 ;;; typescript
+(use-package flycheck
+  :ensure t)
+
+(use-package tide
+  :ensure t)
+
 (defun setup-tide-mode ()
   (interactive)
   (tide-setup)
@@ -439,28 +530,6 @@ Version 2016-03-15"
 (add-hook 'scss-mode-hook 'xah-syntax-color-hex)
 (add-hook 'php-mode-hook 'xah-syntax-color-hex)
 (add-hook 'html-mode-hook 'xah-syntax-color-hex)
-
-;;; secretaria
-;; fix erroneous function
-(require 'secretaria)
-(defun secretaria-alert-due-appt ()
-  "Tell the user about due TODOs tasks."
-  (let ( (appts (secretaria-get-appt 'due)) )
-    (when (< 0 (length appts))
-      (alert (format "Due entries: %s" (length appts))
-             :title "Attention, boss!"
-             :severity 'high
-             :mode 'org-mode))))
-
-(defun secretaria-alert-unknown-time-appt ()
-  "Tell the user about tasks scheduled for today.
-Those tasks have no time of the day specified"
-  (let ( (appts (secretaria-get-appt 'unknown)))
-    (dolist (entry appts)
-      (alert "Task for today, time unspecified"
-             :title (or entry "(no title)")
-             :severity (secretaria--conditional-severity)
-             :mode 'org-mode))))
 
 ;;; load custom settings
 (setq custom-file "~/.emacs.d/init_custom.el")
