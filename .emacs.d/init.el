@@ -7,12 +7,12 @@
   (string-equal system-type "cygwin"))
 
 ;;; elpaca
-(defvar elpaca-installer-version 0.7)
+(defvar elpaca-installer-version 0.11)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
 (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
-                              :ref nil :depth 1
+                              :ref nil :depth 1 :inherit ignore
                               :files (:defaults "elpaca-test.el" (:exclude "extensions"))
                               :build (:not elpaca--activate-package)))
 (let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
@@ -22,33 +22,33 @@
   (add-to-list 'load-path (if (file-exists-p build) build repo))
   (unless (file-exists-p repo)
     (make-directory repo t)
-    (when (< emacs-major-version 28) (require 'subr-x))
+    (when (<= emacs-major-version 28) (require 'subr-x))
     (condition-case-unless-debug err
-        (if-let ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
-                 ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
-                                                 ,@(when-let ((depth (plist-get order :depth)))
-                                                     (list (format "--depth=%d" depth) "--no-single-branch"))
-                                                 ,(plist-get order :repo) ,repo))))
-                 ((zerop (call-process "git" nil buffer t "checkout"
-                                       (or (plist-get order :ref) "--"))))
-                 (emacs (concat invocation-directory invocation-name))
-                 ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
-                                       "--eval" "(byte-recompile-directory \".\" 0 'force)")))
-                 ((require 'elpaca))
-                 ((elpaca-generate-autoloads "elpaca" repo)))
+        (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                  ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
+                                                  ,@(when-let* ((depth (plist-get order :depth)))
+                                                      (list (format "--depth=%d" depth) "--no-single-branch"))
+                                                  ,(plist-get order :repo) ,repo))))
+                  ((zerop (call-process "git" nil buffer t "checkout"
+                                        (or (plist-get order :ref) "--"))))
+                  (emacs (concat invocation-directory invocation-name))
+                  ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                        "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                  ((require 'elpaca))
+                  ((elpaca-generate-autoloads "elpaca" repo)))
             (progn (message "%s" (buffer-string)) (kill-buffer buffer))
           (error "%s" (with-current-buffer buffer (buffer-string))))
       ((error) (warn "%s" err) (delete-directory repo 'recursive))))
   (unless (require 'elpaca-autoloads nil t)
     (require 'elpaca)
     (elpaca-generate-autoloads "elpaca" repo)
-    (load "./elpaca-autoloads")))
+    (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
 
-;; disable symlinks on windows
-(when (system-is-windows)
-  (elpaca-no-symlink-mode))
+;; disable symlinks on windows - not required on win10/11
+;; (when (system-is-windows)
+;;   (elpaca-no-symlink-mode))
 
 ;; install use-package support
 (elpaca elpaca-use-package
@@ -129,24 +129,24 @@
   :config
   (projectile-global-mode)
 
-  ;; (define-key projectile-mode-map projectile-keymap-prefix nil)
-  (define-key projectile-mode-map (kbd "M-p") #'projectile-command-map))
+  :bind (:map projectile-mode-map
+              ("M-p" . projectile-command-map)))
 
 ;; load in customizations
 (load "~/.emacs.d/init_customizations.el")
 
 ;;; custom font - linux
 (when (system-is-linux)
-  (set-face-attribute 'default nil :family "Hack")
-  (add-to-list 'default-frame-alist '(font . "Hack-12"))
+  (set-face-attribute 'default nil :family "hack")
+  (add-to-list 'default-frame-alist '(font . "hack-12"))
 )
 
 ;;; custom font - cygwin and windows
 (when (or (system-is-cygwin) (system-is-windows))
-  (set-face-attribute 'default nil :family "Consolas")
-  (add-to-list 'default-frame-alist '(font . "Consolas-12"))
+  (set-face-attribute 'default nil :family "consolas")
+  (add-to-list 'default-frame-alist '(font . "consolas-12"))
 )
-  
+
 ;;; color themes
 (use-package color-theme-sanityinc-tomorrow
   :ensure t
@@ -154,38 +154,32 @@
   (customize-set-variable 'custom-safe-themes (quote ("04aa1c3ccaee1cc2b93b246c6fbcd597f7e6832a97aaeac7e5891e6863236f9f" default)))
   (customize-set-variable 'custom-enabled-themes (quote (sanityinc-tomorrow-eighties)))
   (load-theme 'sanityinc-tomorrow-eighties t))
-;(use-package idea-darkula-theme
-;  :ensure t)
-;(use-package base16-theme
-;  :ensure t)
-;(use-package monokai-theme
-;  :ensure t)
 
 ;;; hide splash screen
 (customize-set-variable 'inhibit-startup-screen t)
 
-;;; Org mode
-(define-key global-map "\C-Cl" 'org-store-link)
-(define-key global-map "\C-ca" 'org-agenda)
+;;; org mode
+(keymap-global-set "C-c l" 'org-store-link)
+(keymap-global-set "C-c a" 'org-agenda)
 (setq calendar-week-start-day 1)
 (setq org-agenda-custom-commands
-      '(("P" "Printed agenda"
-         ((todo "IMPOSSIBLE_PATTERN" ((org-agenda-overriding-header "Week\n------------------")))
+      '(("p" "printed agenda"
+         ((todo "impossible_pattern" ((org-agenda-overriding-header "week\n------------------")))
           (agenda "" ((org-agenda-ndays 7)                      ;; overview of appointments
                       (org-agenda-start-on-weekday 1)           ;; calendar begins on monday
                       (org-agenda-repeating-timestamp-show-all t)
                       (org-agenda-entry-types '(:timestamp :sexp))))
-          (todo "IMPOSSIBLE_PATTERN" ((org-agenda-overriding-header "\nToday\n------------------")))
+          (todo "impossible_pattern" ((org-agenda-overriding-header "\ntoday\n------------------")))
           (agenda "" ((org-agenda-ndays 1)                      ;; daily agenda
                       (org-deadline-warning-days 30)            ;; 30 days advanced warning for deadlines
                       (org-agenda-todo-keyword-format "[ ]")
                       (org-agenda-scheduled-leaders '("" ""))
                       (org-agenda-prefix-format "%t%s")))
-          (todo "TODO"                                          ;; todos sorted by context
-                ((org-agenda-prefix-format "[ ] %T: ")
+          (todo "todo"                                          ;; todos sorted by context
+                ((org-agenda-prefix-format "[ ] %t: ")
                  (org-agenda-sorting-strategy '(tag-up priority-down))
                  (org-agenda-todo-keyword-format "")
-                 (org-agenda-overriding-header "\nTasks by Context\n------------------\n")))
+                 (org-agenda-overriding-header "\ntasks by context\n------------------\n")))
           )
          ((org-agenda-with-colors t)
           (org-agenda-compact-blocks t)
@@ -215,20 +209,20 @@
   ;; fix erroneous function
   (require 'secretaria)
   (defun secretaria-alert-due-appt ()
-    "Tell the user about due TODOs tasks."
+    "tell the user about due todos tasks."
     (let ( (appts (secretaria-get-appt 'due)) )
       (when (< 0 (length appts))
-        (alert (format "Due entries: %s" (length appts))
-               :title "Attention, boss!"
+        (alert (format "due entries: %s" (length appts))
+               :title "attention, boss!"
                :severity 'high
                :mode 'org-mode))))
 
   (defun secretaria-alert-unknown-time-appt ()
-    "Tell the user about tasks scheduled for today.
-Those tasks have no time of the day specified"
+    "tell the user about tasks scheduled for today.
+those tasks have no time of the day specified"
     (let ( (appts (secretaria-get-appt 'unknown)))
       (dolist (entry appts)
-        (alert "Task for today, time unspecified"
+        (alert "task for today, time unspecified"
                :title (or entry "(no title)")
                :severity (secretaria--conditional-severity)
                :mode 'org-mode)))))
@@ -244,7 +238,8 @@ Those tasks have no time of the day specified"
               (make-variable-buffer-local 'yas/trigger-key)
               (setq yas/trigger-key [tab])
               (add-to-list 'org-tab-first-hook 'yas/org-very-safe-expand)
-              (define-key yas/keymap [tab] 'yas/next-field)))
+              ;;(define-key yas/keymap [tab] 'yas/next-field)
+              (keymap-set yas/keymap "<tab>" 'yas/next-field)))
   (defun yas/org-very-safe-expand ()
     (let ((yas/fallback-behavior 'return-nil)) (yas/expand)))
 
@@ -255,16 +250,6 @@ Those tasks have no time of the day specified"
 (use-package org-pomodoro
   :ensure t)
 
-;;; general auto-complete
-;; (use-package auto-complete
-;;   :ensure t
-;;   :init
-;;   (setq ac-delay 0.0)
-;;   (setq ac-quick-help-delay 0.5)
-;; 
-;;   :config
-;;   (ac-config-default))
-
 ;;; company auto-complete
 (use-package company
   :ensure t
@@ -274,8 +259,8 @@ Those tasks have no time of the day specified"
   (add-hook 'after-init-hook 'company-quickhelp-mode)
   (setq company-idle-delay 0.0)
   (setq company-dabbrev-downcase nil)
-  (global-set-key [C-tab] #'company-complete) ; use C-TAB as manual trigger
-  (define-key evil-insert-state-map (kbd "C-SPC") #'company-complete))
+  (global-set-key [c-tab] #'company-complete) ; use c-tab as manual trigger
+  (keymap-set evil-insert-state-map "C-SPC" 'company-complete))
 
 (use-package company-quickhelp
   :ensure t)
@@ -286,11 +271,6 @@ Those tasks have no time of the day specified"
 
 (use-package magit
   :ensure t)
-
-;; (use-package evil-magit
-;;   :ensure t
-;;   :init
-;;   (global-set-key (kbd "C-x g") 'magit-status))
 
 ;;; smartparens
 (use-package smartparens
@@ -329,28 +309,12 @@ Those tasks have no time of the day specified"
   :ensure t
   :defer t)
 
-;;; cider autocomplete
-;; (use-package ac-cider
-;;   :ensure t
-;;   :init
-;;   (add-hook 'cider-mode-hook 'ac-flyspell-workaround)
-;;   (add-hook 'cider-mode-hook 'ac-cider-setup)
-;;   (add-hook 'cider-repl-mode-hook 'ac-cider-setup)
-;; 
-;;   :config
-;;   (eval-after-load "auto-complete"
-;;     '(progn
-;;        (add-to-list 'ac-modes 'cider-mode)
-;;        (add-to-list 'ac-modes 'cider-repl-mode))))
-
 ;;; clojure mode for org-babel
 (require 'ob-clojure)
 (setq org-babel-clojure-backend 'cider)
 
 ;;; from mooc
 ;;; global settings
-;;(require 'cl)
-;;(require 'ffap) ; find file at point
 (require 'uniquify)
 (require 'ansi-color)
 (require 'recentf)
@@ -373,80 +337,54 @@ Those tasks have no time of the day specified"
 (setq-default indent-tabs-mode nil)
 (setq-default whitespace-style '(tabs spaces trailing lines space-before-tab newline indentation:space empty space-after-tab space-mark tab-mark newline-mark))
 
-;;; helm
-(use-package helm
-  :ensure t
-  :defer t
-  :init
-  ;; The default "C-x c" is quite close to "C-x C-c", which quits Emacs.
-  ;; Changed to "C-c h". Note: We must set "C-c h" globally, because we
-  ;; cannot change `helm-command-prefix-key' once `helm-config' is loaded.
-  (global-set-key (kbd "C-c h") 'helm-command-prefix)
-  (global-unset-key (kbd "C-x c"))
-
-  ;; Helm's generic functions
-  (global-set-key (kbd "M-x") #'helm-M-x)
-  (global-set-key (kbd "C-x r b") #'helm-filtered-bookmarks)
-  (global-set-key (kbd "C-x C-f") #'helm-find-files)
-
-  (when (executable-find "curl")
-    (setq helm-google-suggest-use-curl-p t))
-
-  (setq helm-split-window-in-side-p           t ; open helm buffer inside current window, not occupy whole other window
-        helm-move-to-line-cycle-in-source     t ; move to end or beginning of source when reaching top or bottom of source.
-        helm-ff-search-library-in-sexp        t ; search for library in `require' and `declare-function' sexp.
-        helm-scroll-amount                    8 ; scroll 8 lines other window using M-<next>/M-<prior>
-        helm-ff-file-name-history-use-recentf t)
-  :config
-  (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
-  (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
-  (define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
-
-  (helm-mode 1))
-
-(use-package helm-swoop
+;;; vertico
+(use-package vertico
   :ensure t
   :init
-  ;; helm-swoop keybindings
-  (global-set-key (kbd "M-i") 'helm-swoop)
-  (global-set-key (kbd "M-I") 'helm-swoop-back-to-last-point)
-  (global-set-key (kbd "C-c M-i") 'helm-multi-swoop)
-  (global-set-key (kbd "C-x M-i") 'helm-multi-swoop-all)
+  (vertico-mode)
+  ;; enable cycling for 'vertico-next' and 'vertico-prev'
+  (setq vertico-cycle t)
+  :bind (:map minibuffer-local-map
+              ("C-j" . vertico-next)
+              ("C-k" . vertico-previous)
+              ("C-f" . vertico-exit)
+              ("<backspace>" . vertico-directory-delete-char)
+              ("C-<backspace>" . vertico-directory-delete-word)
+              ("C-w" . vertico-directory-delete-word)
+              ("RET" . vertico-directory-enter)))
 
-  ;; If nil, you can slightly boost invoke speed in exchange for text color
-  (setq helm-swoop-speed-or-color t)
+;;; orderless
+(use-package orderless
+  :ensure t
+  :init
+  (setq completion-styles '(orderless basic)
+        completion-category-defaults nil
+        completion-category-overrides '((file (styles partial-completion)))))
 
-  ;; helm-swoop fuzzy matching
-  (setq helm-swoop-use-fuzzy-match t)
+(use-package savehist
+  :ensure nil
+  :init
+  (savehist-mode))
 
-  ;; Disable pre-input
-  (setq helm-swoop-pre-input-function
-        (lambda () ""))
-
-  :config
-  ;; When doing isearch, hand the word over to helm-swoop
-  (define-key isearch-mode-map (kbd "M-i") 'helm-swoop-from-isearch)
-  ;; From helm-swoop to helm-multi-swoop-all
-  (define-key helm-swoop-map (kbd "M-i") 'helm-multi-swoop-all-from-helm-swoop)
-  ;; When doing evil-search, hand the word over to helm-swoop
-  (define-key evil-motion-state-map (kbd "M-i") 'helm-swoop-from-evil-search)
-
-  ;; Instead of helm-multi-swoop-all, you can also use helm-multi-swoop-current-mode
-  (define-key helm-swoop-map (kbd "M-m") 'helm-multi-swoop-current-mode-from-helm-swoop))
+;;; marginalia
+(use-package marginalia
+  :ensure t
+  :after vertico
+  :custom
+  (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
+  ;; Bind `marginalia-cycle' locally in the minibuffer.  To make the binding
+  ;; available in the *Completions* buffer, add it to the
+  ;; `completion-list-mode-map'.
+  :bind (:map minibuffer-local-map
+         ("M-A" . marginalia-cycle))
+  :init
+  (marginalia-mode))
 
 ;;; nyan mode
 (use-package nyan-mode
   :ensure t
   :config
-  (nyan-mode t)
-  
-  ;; ;; with animation - buggy
-  ;; (if window-system
-  ;;     (progn
-  ;;       (nyan-mode t)
-  ;;       (setq nyan-wavy-trail t)
-  ;;         (nyan-start-animation)))
-  )
+  (nyan-mode t))
 
 ;;; htmlize - Convert buffer text and decorations to HTML
 (use-package htmlize
