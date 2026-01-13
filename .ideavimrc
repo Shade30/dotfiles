@@ -1,16 +1,23 @@
+" General
+set scrolloff=10
+set number
+set showmode
+set showcmd
+"set clipboard+=unnamed
+
+" Search
 set ignorecase
+set smartcase
+set incsearch
+set hlsearch
+
+" Plugins
 set surround
+set highlightedyank
 set easymotion
 set commentary
 set NERDTree
 set ReplaceWithRegister
 set argtextobj
-set incsearch
-set hlsearch
-set scrolloff=4
-set number
 set ideajoin
-
-set quickscope
-let g:qs_highlight_on_keys = ['f', 'F', 't', 'T']
-set scrolloff=4
+set idearefactormode=keep

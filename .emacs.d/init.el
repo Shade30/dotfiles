@@ -57,7 +57,7 @@
 
 ;;; Save emacs sessions
 (desktop-save-mode 1)
-(setq desktop-load-locked-desktop nil)
+(setopt desktop-load-locked-desktop nil)
 
 ;;; Start server on startup
 (require 'server)
@@ -71,28 +71,28 @@
   (dolist (dir (list backup-dir auto-saves-dir))
     (when (not (file-directory-p dir))
       (make-directory dir t)))
-  (setq backup-directory-alist `(("." . ,backup-dir))
-        auto-save-file-name-transforms `((".*" ,auto-saves-dir t))
-        auto-save-list-file-prefix (concat auto-saves-dir ".saves-")
-        tramp-backup-directory-alist `((".*" . ,backup-dir))
-        tramp-auto-save-directory auto-saves-dir))
+  (setopt backup-directory-alist `(("." . ,backup-dir))
+          auto-save-file-name-transforms `((".*" ,auto-saves-dir t))
+          auto-save-list-file-prefix (concat auto-saves-dir ".saves-")
+          tramp-backup-directory-alist `((".*" . ,backup-dir))
+          tramp-auto-save-directory auto-saves-dir))
 
-(setq backup-by-copying t    ; Don't delink hardlinks
-      delete-old-versions t  ; Clean up the backups
-      version-control t      ; Use version numbers on backups,
-      kept-new-versions 5    ; keep some new versions
-      kept-old-versions 2)   ; and some old ones, too
+(setopt backup-by-copying t    ; Don't delink hardlinks
+        delete-old-versions t  ; Clean up the backups
+        version-control t      ; Use version numbers on backups,
+        kept-new-versions 5    ; keep some new versions
+        kept-old-versions 2)   ; and some old ones, too
 
 ;; Show bent arrow in the window fringe to distinguish visual lines
-(setq visual-line-fringe-indicators '(left-curly-arrow right-curly-arrow))
+(setopt visual-line-fringe-indicators '(left-curly-arrow right-curly-arrow))
 
 ;;; evil mode
 (use-package evil
   :ensure t
   :init
-  (setq evil-want-integration t)
-  (setq evil-want-keybinding nil)
-  (setq evil-want-C-i-jump nil)
+  (setopt evil-want-integration t)
+  (setopt evil-want-keybinding nil)
+  (setopt evil-want-C-i-jump nil)
 
   :config
   (evil-mode t))
@@ -161,30 +161,30 @@
 ;;; org mode
 (keymap-global-set "C-c l" 'org-store-link)
 (keymap-global-set "C-c a" 'org-agenda)
-(setq calendar-week-start-day 1)
-(setq org-agenda-custom-commands
-      '(("p" "printed agenda"
-         ((todo "impossible_pattern" ((org-agenda-overriding-header "week\n------------------")))
-          (agenda "" ((org-agenda-ndays 7)                      ;; overview of appointments
-                      (org-agenda-start-on-weekday 1)           ;; calendar begins on monday
-                      (org-agenda-repeating-timestamp-show-all t)
-                      (org-agenda-entry-types '(:timestamp :sexp))))
-          (todo "impossible_pattern" ((org-agenda-overriding-header "\ntoday\n------------------")))
-          (agenda "" ((org-agenda-ndays 1)                      ;; daily agenda
-                      (org-deadline-warning-days 30)            ;; 30 days advanced warning for deadlines
-                      (org-agenda-todo-keyword-format "[ ]")
-                      (org-agenda-scheduled-leaders '("" ""))
-                      (org-agenda-prefix-format "%t%s")))
-          (todo "todo"                                          ;; todos sorted by context
-                ((org-agenda-prefix-format "[ ] %t: ")
-                 (org-agenda-sorting-strategy '(tag-up priority-down))
-                 (org-agenda-todo-keyword-format "")
-                 (org-agenda-overriding-header "\ntasks by context\n------------------\n")))
-          )
-         ((org-agenda-with-colors t)
-          (org-agenda-compact-blocks t)
-          (org-agenda-remove-tags t))
-         ("~/org/theagenda.html"))))
+(setopt calendar-week-start-day 1)
+(setopt org-agenda-custom-commands
+        '(("p" "printed agenda"
+           ((todo "impossible_pattern" ((org-agenda-overriding-header "week\n------------------")))
+            (agenda "" ((org-agenda-ndays 7)                      ;; overview of appointments
+                        (org-agenda-start-on-weekday 1)           ;; calendar begins on monday
+                        (org-agenda-repeating-timestamp-show-all t)
+                        (org-agenda-entry-types '(:timestamp :sexp))))
+            (todo "impossible_pattern" ((org-agenda-overriding-header "\ntoday\n------------------")))
+            (agenda "" ((org-agenda-ndays 1)                      ;; daily agenda
+                        (org-deadline-warning-days 30)            ;; 30 days advanced warning for deadlines
+                        (org-agenda-todo-keyword-format "[ ]")
+                        (org-agenda-scheduled-leaders '("" ""))
+                        (org-agenda-prefix-format "%t%s")))
+            (todo "todo"                                          ;; todos sorted by context
+                  ((org-agenda-prefix-format "[ ] %t: ")
+                   (org-agenda-sorting-strategy '(tag-up priority-down))
+                   (org-agenda-todo-keyword-format "")
+                   (org-agenda-overriding-header "\ntasks by context\n------------------\n")))
+            )
+           ((org-agenda-with-colors t)
+            (org-agenda-compact-blocks t)
+            (org-agenda-remove-tags t))
+           ("~/org/theagenda.html"))))
 
 ;;; org-trello
 (use-package org-trello
@@ -238,7 +238,6 @@ those tasks have no time of the day specified"
               (make-variable-buffer-local 'yas/trigger-key)
               (setq yas/trigger-key [tab])
               (add-to-list 'org-tab-first-hook 'yas/org-very-safe-expand)
-              ;;(define-key yas/keymap [tab] 'yas/next-field)
               (keymap-set yas/keymap "<tab>" 'yas/next-field)))
   (defun yas/org-very-safe-expand ()
     (let ((yas/fallback-behavior 'return-nil)) (yas/expand)))
@@ -250,6 +249,17 @@ those tasks have no time of the day specified"
 (use-package org-pomodoro
   :ensure t)
 
+;;; telega
+(use-package telega
+  :ensure t
+  :init
+  (setopt telega-use-docker t)
+  (setopt telega-use-images t)
+  (setopt telega-emoji-font-family "Symbola"))
+
+(use-package visual-fill-column
+  :ensure t)
+
 ;;; company auto-complete
 (use-package company
   :ensure t
@@ -257,8 +267,8 @@ those tasks have no time of the day specified"
   :init
   (add-hook 'after-init-hook 'global-company-mode)
   (add-hook 'after-init-hook 'company-quickhelp-mode)
-  (setq company-idle-delay 0.0)
-  (setq company-dabbrev-downcase nil)
+  (setopt company-idle-delay 0.0)
+  (setopt company-dabbrev-downcase nil)
   (global-set-key [c-tab] #'company-complete) ; use c-tab as manual trigger
   (keymap-set evil-insert-state-map "C-SPC" 'company-complete))
 
@@ -289,7 +299,7 @@ those tasks have no time of the day specified"
   :ensure t
   :init
   (add-hook 'smartparens-enabled-hook #'evil-smartparens-mode)
-  (add-hook 'clojure-mode-hook #'subword-mode)
+  (add-hook 'clojure-mode-hook #'subword-mode) ;
   (add-hook 'clojure-mode-hook #'smartparens-strict-mode)
   (add-hook 'clojure-mode-hook #'rainbow-delimiters-mode)
   (add-hook 'clojure-mode-hook #'show-smartparens-mode))
@@ -311,7 +321,7 @@ those tasks have no time of the day specified"
 
 ;;; clojure mode for org-babel
 (require 'ob-clojure)
-(setq org-babel-clojure-backend 'cider)
+(setopt org-babel-clojure-backend 'cider)
 
 ;;; from mooc
 ;;; global settings
@@ -327,15 +337,15 @@ those tasks have no time of the day specified"
 (normal-erase-is-backspace-mode 1)
 (put 'downcase-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
-(setq column-number-mode t)
-(setq inhibit-startup-message t)
-(setq save-abbrevs nil)
-(setq show-trailing-whitespace t)
-(setq suggest-key-bindings t)
-(setq vc-follow-symlinks t)
+(setopt column-number-mode t)
+(setopt inhibit-startup-message t)
+(setopt save-abbrevs nil)
+(setopt show-trailing-whitespace t)
+(setopt suggest-key-bindings t)
+(setopt vc-follow-symlinks t)
 ;; use spaces instead of tabs when indenting
-(setq-default indent-tabs-mode nil)
-(setq-default whitespace-style '(tabs spaces trailing lines space-before-tab newline indentation:space empty space-after-tab space-mark tab-mark newline-mark))
+(setopt indent-tabs-mode nil)
+(setopt whitespace-style '(tabs spaces trailing lines space-before-tab newline indentation:space empty space-after-tab space-mark tab-mark newline-mark))
 
 ;;; vertico
 (use-package vertico
@@ -343,7 +353,7 @@ those tasks have no time of the day specified"
   :init
   (vertico-mode)
   ;; enable cycling for 'vertico-next' and 'vertico-prev'
-  (setq vertico-cycle t)
+  (setopt vertico-cycle t)
   :bind (:map minibuffer-local-map
               ("C-j" . vertico-next)
               ("C-k" . vertico-previous)
@@ -357,9 +367,9 @@ those tasks have no time of the day specified"
 (use-package orderless
   :ensure t
   :init
-  (setq completion-styles '(orderless basic)
-        completion-category-defaults nil
-        completion-category-overrides '((file (styles partial-completion)))))
+  (setopt completion-styles '(orderless basic)
+          completion-category-defaults nil
+          completion-category-overrides '((file (styles partial-completion)))))
 
 (use-package savehist
   :ensure nil
@@ -394,16 +404,13 @@ those tasks have no time of the day specified"
 (defun remove-dos-eol ()
   "Do not show ^M in files containing mixed UNIX and DOS line endings."
   (interactive)
-  (setq buffer-display-table (make-display-table))
+  (setopt buffer-display-table (make-display-table))
   (aset buffer-display-table ?\^M []))
 
 ;;; groovy mode
 (use-package groovy-mode
   :ensure t
   :mode "\\.groovy\\'")
-
-(use-package scss-mode
-  :ensure t)
 
 (use-package markdown-mode
   :ensure t)
@@ -422,13 +429,13 @@ those tasks have no time of the day specified"
   (interactive)
   (tide-setup)
   (flycheck-mode +1)
-  (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  (setopt flycheck-check-syntax-automatically '(save mode-enabled))
   (eldoc-mode +1)
   (tide-hl-identifier-mode +1)
   (company-mode +1))
 
 ;; aligns annotation to the right hand side
-(setq company-tooltip-align-annotations t)
+(setopt company-tooltip-align-annotations t)
 
 (add-hook 'typescript-mode-hook #'setup-tide-mode)
 ;; enable evil collection for tide
@@ -473,5 +480,5 @@ Version 2016-03-15"
 (add-hook 'html-mode-hook 'xah-syntax-color-hex)
 
 ;;; load custom settings
-(setq custom-file "~/.emacs.d/init_custom.el")
+(setopt custom-file "~/.emacs.d/init_custom.el")
 (if (file-exists-p "~/.emacs.d/init_custom.el") (load-library "~/.emacs.d/init_custom.el"))

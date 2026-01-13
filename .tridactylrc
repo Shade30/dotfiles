@@ -2,6 +2,9 @@
 " Theme
 set theme dark
 
+" Smooth scroll
+set smoothscroll true
+
 " Bind next/prev tab
 bind <A-k> tabprev
 bind <A-j> tabnext
