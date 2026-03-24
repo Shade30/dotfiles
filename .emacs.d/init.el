@@ -218,7 +218,7 @@
 (setq org-default-notes-file "~/org/inbox-desktop.org")
 (setq org-capture-templates
       '(("n" "Note" entry (file+headline "" "Notes")
-         "* [%U] %^{Tag}\n%i%?\n")
+         "* [%U] %?\n%i\n")
         ("t" "Task" entry (file+headline "" "Tasks")
          "* TODO %?\n  %u\n  %a")))
 
