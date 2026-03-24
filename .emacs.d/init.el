@@ -213,6 +213,15 @@
 ;;; org mode
 (keymap-global-set "C-c l" 'org-store-link)
 (keymap-global-set "C-c a" 'org-agenda)
+(keymap-global-set "C-c c" 'org-capture)
+
+(setq org-default-notes-file "~/org/inbox-desktop.org")
+(setq org-capture-templates
+      '(("n" "Note" entry (file+headline "" "Notes")
+         "* [%U] %^{Tag}\n%i%?\n")
+        ("t" "Task" entry (file+headline "" "Tasks")
+         "* TODO %?\n  %u\n  %a")))
+
 (setopt calendar-week-start-day 1)
 (setopt org-agenda-custom-commands
         '(("p" "printed agenda"
