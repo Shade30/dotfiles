@@ -1,294 +1,204 @@
-# To the extent possible under law, the author(s) have dedicated all 
-# copyright and related and neighboring rights to this software to the 
-# public domain worldwide. This software is distributed without any warranty. 
-# You should have received a copy of the CC0 Public Domain Dedication along 
-# with this software. 
-# If not, see <http://creativecommons.org/publicdomain/zero/1.0/>. 
-
-# base-files version 4.2-3
-
 # ~/.bashrc: executed by bash(1) for interactive shells.
-
-# The latest version as installed by the Cygwin Setup program can
-# always be found at /etc/defaults/etc/skel/.bashrc
-
-# Modifying /etc/skel/.bashrc directly will prevent
-# setup from updating it.
-
-# The copy in your home directory (~/.bashrc) is yours, please
-# feel free to customise it to create a shell
-# environment to your liking.  If you feel a change
-# would be benifitial to all, please feel free to send
-# a patch to the cygwin mailing list.
 
 # User dependent .bashrc file
 
 # If not running interactively, don't do anything
 [[ "$-" != *i* ]] && return
 
-# Shell Options
-#
-# See man bash for more options...
-#
-# Don't wait for job termination notification
-# set -o notify
-#
-# Don't use ^D to exit
-# set -o ignoreeof
-#
-# Use case-insensitive filename globbing
-# shopt -s nocaseglob
-#
-# When changing directory small typos can be ignored by bash
-# for example, cd /vr/lgo/apaache would find /var/log/apache
-# shopt -s cdspell
-
-# Completion options
-#
-# These completion tuning parameters change the default behavior of bash_completion:
-#
-# Define to access remotely checked-out files over passwordless ssh for CVS
-# COMP_CVS_REMOTE=1
-#
-# Define to avoid stripping description in --option=description of './configure --help'
-# COMP_CONFIGURE_HINTS=1
-#
-# Define to avoid flattening internal contents of tar files
-# COMP_TAR_INTERNAL_PATHS=1
-#
-# Uncomment to turn on programmable completion enhancements.
-# Any completions you add in ~/.bash_completion are sourced last.
-# [[ -f /etc/bash_completion ]] && . /etc/bash_completion
-
-# History Options
-#
-# Don't put duplicate lines in the history.
-# export HISTCONTROL=$HISTCONTROL${HISTCONTROL+,}ignoredups
-#
-# Ignore some controlling instructions
-# HISTIGNORE is a colon-delimited list of patterns which should be excluded.
-# The '&' is a special pattern which suppresses duplicate entries.
-# export HISTIGNORE=$'[ \t]*:&:[fb]g:exit'
-# export HISTIGNORE=$'[ \t]*:&:[fb]g:exit:ls' # Ignore the ls command as well
-#
-# Whenever displaying the prompt, write the previous line to disk
-# export PROMPT_COMMAND="history -a"
-if [ "$PS1" ]; then
-
-    # Bash eternal history
-    # --------------------
-    # This snippet allows infinite recording of every command you've ever
-    # entered on the machine, without using a large HISTFILESIZE variable,
-    # and keeps track if you have multiple screens and ssh sessions into the
-    # same machine. It is adapted from:
-    # http://www.debian-administration.org/articles/543.
-    #
-    # The way it works is that after each command is executed and
-    # before a prompt is displayed, a line with the last command (and
-    # some metadata) is appended to ~/.bash_eternal_history.
-    #
-    # This file is a tab-delimited, timestamped file, with the following
-    # columns:
-    #
-    # 1) user
-    # 2) hostname
-    # 3) screen window (in case you are using GNU screen)
-    # 4) date/time
-    # 5) current working directory (to see where a command was executed)
-    # 6) the last command you executed
-    #
-    # The only minor bug: if you include a literal newline or tab (e.g. with
-    # awk -F"\t"), then that will be included verbatime. It is possible to
-    # define a bash function which escapes the string before writing it; if you
-    # have a fix for that which doesn't slow the command down, please submit
-    # a patch or pull request.
-    PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND ; }"'echo -e $$\\t$USER\\t$HOSTNAME\\tscreen $WINDOW\\t`date +%D%t%T%t%Y%t%s`\\t$PWD\\t"$(history 1)" >> ~/.bash_eternal_history'
-    # Turn on checkwinsize
-    shopt -s checkwinsize
-
-    #Prompt edited from default
-    [ "$PS1" = "\\s-\\v\\\$ " ] && PS1="[\u \w]\\$ "
-
-    if [ "x$SHLVL" != "x1" ]; then # We're not a login shell
-
+if ! shopt -q login_shell; then # We're not a login shell
     # Arch Linux workaround: provide append_path API function to scripts in /etc/profile.d
 
-	# Append "$1" to $PATH when not already in.
-	# This function API is accessible to scripts in /etc/profile.d
-	append_path () {
-		case ":$PATH:" in
-			*:"$1":*)
-				;;
-			*)
-				PATH="${PATH:+$PATH:}$1"
-		esac
-	}
+    # Append "$1" to $PATH when not already in.
+    # This function API is accessible to scripts in /etc/profile.d
+    append_path () { case ":$PATH:" in *:"$1":*) ;; *) PATH="${PATH:+$PATH:}$1" ;; esac; }
 
-	for i in /etc/profile.d/*.sh; do
-	    if [ -r "$i" ]; then
-		. $i
-	    fi
-	done
+    for script in /etc/profile.d/*.sh; do
+        [[ -r $script ]] && . "$script"
+    done
 
-	# Unload our profile API functions
-	unset -f append_path
-
-    fi
+    # Unload our profile API functions
+    unset -f append_path
 fi
 
-# Append to history
-# Make bash append rather than overwrite the history on disk
-# See: http://www.tldp.org/HOWTO/Bash-Prompt-HOWTO/x329.html
-shopt -s histappend
-
+# Shell settings
+#
+# recalculate LINES/COLUMNS after command
+shopt -s checkwinsize
+# ** recursively, ls **/*.java
+shopt -s globstar
+# warn about background tasks
+shopt -s checkjobs
+# > does not rewrite file, >| is required
+set -o noclobber
 # Disable XON/XOFF to enable search forward
 [[ $- == *i* ]] && stty -ixon
+# vim as editor
+export VISUAL=vim
+export EDITOR="$VISUAL"
 
-# Aliases
+# History
 #
-# Some people use a different file for aliases
-# if [ -f "${HOME}/.bash_aliases" ]; then
-#   source "${HOME}/.bash_aliases"
-# fi
-#
-# Some example alias instructions
-# If these are enabled they will be used instead of any instructions
-# they may mask.  For example, alias rm='rm -i' will mask the rm
-# application.  To override the alias instruction use a \ before, ie
-# \rm will call the real rm not the alias.
-#
-# Interactive operation...
-alias rm='rm -i'
-alias cp='cp -i'
-alias mv='mv -i'
-set -o noclobber
-
-# Default to human readable figures
-alias df='df -h'
-alias du='du -h'
-
-# Misc :)
-alias less='less -r'                          # raw control characters
-alias whence='type -a'                        # where, of a sort
-alias grep='grep --color'                     # show differences in colour
-alias egrep='grep -E --color=auto'            # show differences in colour
-alias fgrep='fgrep --color=auto'              # show differences in colour
-#export GREP_COLOR='1;31';                    # green for matches - deprecated
-export GREP_COLORS='mt=1;31';                 # green for matches
-alias ic='iconv -f cp866 -t utf-8'            # shortcuts for cmd tools output conversion
-
-# Some shortcuts for different directory listings
-alias ls='ls -hF --color=tty'                 # classify files in colour
-alias dir='ls --color=auto --format=vertical'
-alias vdir='ls --color=auto --format=long'
-alias ll='ls -larth'                          # long list
-alias la='ls -A'                              # all but . and ..
-alias l='ls -CF'                              #
+# Session history size, default 500
+#HISTSIZE=10000
+# Max lines in history file, default HISTSIZE
+#HISTFILESIZE=20000
+# No duplicates, no commands prepended by space
+HISTCONTROL=ignoreboth:erasedups
+# Make bash append rather than overwrite the history on disk
+shopt -s histappend
+# Bash eternal history
+BASH_ETERNAL_HISTORY=~/.bash_eternal_history
+PROMPT_COMMAND+=('history -a')
+PROMPT_COMMAND+=('printf "%s\t%s\t%s\tscreen %s\t%s\t%s\t%s\n" "$$" "$USER" "$HOSTNAME" "$WINDOW" "$(date "+%D %T %Y %s")" "$PWD" "$(history 1)" >> "$BASH_ETERNAL_HISTORY"')
 
 # Bash prompt
-export PS1="\[\033[01;34m\]#\u@\h:\w:[\${PIPESTATUS[@]}]\$\[\033[00m\] "
+#
+PS1="\[\033[01;34m\]#\u@\h:\w:[\${PIPESTATUS[@]}]\$\[\033[00m\] "
 
-# Modify path so that cygwin bin dirs are appended rather then prepended
-PATH="$PATH:/usr/local/bin:/usr/bin/"
 # Umask
 #
-# /etc/profile sets 022, removing write perms to group + others.
-# Set a more restrictive umask: i.e. no exec perms for others:
-# umask 027
-# Paranoid: neither group nor others have any perms:
-# umask 077
-# From the MOOC:
-# If the group name is the same as the username OR the user id is not
-# greater than 99 (i.e. not root or a privileged user), then we are on a
-# local machine (check for yourself), so we set umask 002.
-#
-# Conversely, if the default group name is *different* from the username
-# AND the user id is greater than 99, we're on the server, and set umask
-# 022 for easy collaborative editing.
-if [ "`id -gn`" == "`id -un`" -a `id -u` -gt 99 ]; then
+# Personal machine (primary group == user name): group-writable files; shared server: 022
+if [ "$(id -gn)" == "$(id -un)" -a $(id -u) -gt 99 ]; then
     umask 002
 else
     umask 022
 fi
 
+# Aliases
+#
+# Interactive operation...
+alias rm='rm -I'                              # asks only for 4 files and more
+alias cp='cp -i'
+alias mv='mv -i'
+
+# Default to human readable figures
+alias df='df -h'
+alias du='du -h'
+
+# Misc
+alias less='less -R'                          # raw control characters
+alias whence='type -a'                        # where, of a sort
+alias grep='grep --color'                     # show differences in colour
+alias egrep='grep -E --color=auto'            # show differences in colour
+alias fgrep='fgrep --color=auto'              # show differences in colour
+export GREP_COLORS='mt=1;31'                  # green for matches
+alias ic='iconv -f cp866 -t utf-8'            # shortcuts for cmd tools output conversion
+
+# Some shortcuts for different directory listings
+alias ls='ls -hF --color=tty'                 # classify files in colour
+alias ll='ls -larth'                          # long list
+alias la='ls -A'                              # all but . and ..
+alias l='ls -CF'                              #
+
 # Functions
 #
-# Some people use a different file for functions
-# if [ -f "${HOME}/.bash_functions" ]; then
-#   source "${HOME}/.bash_functions"
-# fi
-#
-# Some example functions:
-#
-# a) function settitle
-# settitle () 
-# { 
-#   echo -ne "\e]2;$@\a\e]1;$@\a"; 
-# }
-# 
-# b) function cd_func
-# This function defines a 'cd' replacement function capable of keeping, 
-# displaying and accessing history of visited directories, up to 10 entries.
-# To use it, uncomment it, source this file and try 'cd --'.
-# acd_func 1.0.5, 10-nov-2004
-# Petar Marinov, http:/geocities.com/h2428, this is public domain
-# cd_func ()
-# {
-#   local x2 the_new_dir adir index
-#   local -i cnt
-# 
-#   if [[ $1 ==  "--" ]]; then
-#     dirs -v
-#     return 0
-#   fi
-# 
-#   the_new_dir=$1
-#   [[ -z $1 ]] && the_new_dir=$HOME
-# 
-#   if [[ ${the_new_dir:0:1} == '-' ]]; then
-#     #
-#     # Extract dir N from dirs
-#     index=${the_new_dir:1}
-#     [[ -z $index ]] && index=1
-#     adir=$(dirs +$index)
-#     [[ -z $adir ]] && return 1
-#     the_new_dir=$adir
-#   fi
-# 
-#   #
-#   # '~' has to be substituted by ${HOME}
-#   [[ ${the_new_dir:0:1} == '~' ]] && the_new_dir="${HOME}${the_new_dir:1}"
-# 
-#   #
-#   # Now change to the new dir and add to the top of the stack
-#   pushd "${the_new_dir}" > /dev/null
-#   [[ $? -ne 0 ]] && return 1
-#   the_new_dir=$(pwd)
-# 
-#   #
-#   # Trim down everything beyond 11th entry
-#   popd -n +11 2>/dev/null 1>/dev/null
-# 
-#   #
-#   # Remove any other occurence of this dir, skipping the top of the stack
-#   for ((cnt=1; cnt <= 10; cnt++)); do
-#     x2=$(dirs +${cnt} 2>/dev/null)
-#     [[ $? -ne 0 ]] && return 0
-#     [[ ${x2:0:1} == '~' ]] && x2="${HOME}${x2:1}"
-#     if [[ "${x2}" == "${the_new_dir}" ]]; then
-#       popd -n +$cnt 2>/dev/null 1>/dev/null
-#       cnt=cnt-1
-#     fi
-#   done
-# 
-#   return 0
-# }
-# 
-# alias cd=cd_func
+# from https://gist.github.com/lonnen/3101795
+# from i8ramin - http://getintothis.com/blog/2012/04/02/git-grep-and-blame-bash-function/
+# runs git grep on a pattern, and then uses git blame to who did it
+ggb() {
+    git grep -n "$1" | while IFS=: read i j k; do git blame -L $j,$j $i | cat; done
+}
 
-## ------------------------------
-## ----  User-customized code  --
-## ------------------------------
+# shows filename
+ggbf() {
+    git grep -n "$1" | while IFS=: read i j k; do git blame -L $j,$j $i | cat | sed 's|^|'$i':\t|'; done
+}
+
+# small modification for git egrep bash
+geb() {
+    git grep -E -n "$1" | while IFS=: read i j k; do git blame -L $j,$j $i | cat; done
+}
+
+# source: https://madebynathan.com/2011/10/04/a-nicer-way-to-use-xclip/
+# A shortcut function that simplifies usage of xclip/wl-copy.
+# - Accepts input from either stdin (pipe), or params.
+# ------------------------------------------------
+cb() {
+  local _scs_col="\e[0;32m"; local _wrn_col='\e[1;31m'; local _trn_col='\e[0;33m'
+  # Check that xclip is installed.
+  if [ ${XDG_SESSION_TYPE} == "x11" ] && ! type xclip > /dev/null 2>&1; then
+    echo -e "$_wrn_col""You must have the 'xclip' package installed.\e[0m"
+  # Check that wl-clipboard is installed.
+  elif [ ${XDG_SESSION_TYPE} == "wayland" ] && ! type wl-copy > /dev/null 2>&1; then
+    echo -e "$_wrn_col""You must have the 'wl-clipboard' package installed.\e[0m"
+  # Check user is not root (root doesn't have access to user xorg server)
+  elif [[ "$USER" == "root" ]]; then
+    echo -e "$_wrn_col""Must be regular user (not root) to copy a file to the clipboard.\e[0m"
+  else
+    # If no tty, data should be available on stdin
+    if ! [[ "$( tty )" == /dev/* ]]; then
+      input="$(< /dev/stdin)"
+    # Else, fetch input from params
+    else
+      input="$*"
+    fi
+    if [ -z "$input" ]; then  # If no input, print usage message.
+      echo "Copies a string to the clipboard."
+      echo "Usage: cb <string>"
+      echo "       echo <string> | cb"
+    else
+      # Copy input to clipboard
+      if [ ${XDG_SESSION_TYPE} == "x11" ]; then
+        echo -n "$input" | xclip -selection c
+      elif [ ${XDG_SESSION_TYPE} == "wayland" ]; then
+        echo -n "$input" | wl-copy -n
+      fi
+      # Truncate text for status
+      if [ ${#input} -gt 80 ]; then input="$(echo $input | cut -c1-80)$_trn_col...\e[0m"; fi
+      # Print status.
+      echo -e "$_scs_col""Copied to clipboard:\e[0m $input"
+    fi
+  fi
+}
+
+# diff with emacs
+# source: https://emacs.stackexchange.com/a/34952
+ediff () 
+{ 
+    if [ -d $1 ]; then
+        emacsclient -c -a emacs -q --eval "(ediff-directories \"$1\" \"$2\" \"\")";
+    else
+        emacsclient -c -a emacs -q --eval "(ediff-files \"$1\" \"$2\")";
+    fi
+}
+ediff3 () 
+{ 
+    if [ $# -ne 3 ]; then
+        echo Usage: $0 local base other;
+        exit 1;
+    fi;
+    emacsclient -c -a emacs -q --eval '(ediff-merge-with-ancestor "'$1'" "'$2'" "'$3'")'
+}
+
+BASH_ETERNAL_HISTORY_ARCHIVE=~/.bash_eternal_history.d
+# Gzipped copy of the eternal history, the source file is kept as is
+archive_eternal_history() {
+    local archive="$BASH_ETERNAL_HISTORY_ARCHIVE/$(date +%Y-%m-%d_%H%M%S).tsv.gz"
+    [[ -f $BASH_ETERNAL_HISTORY ]] || return 0
+    mkdir -p "$BASH_ETERNAL_HISTORY_ARCHIVE" \
+        && gzip -c "$BASH_ETERNAL_HISTORY" > "$archive" \
+        && echo "$archive"
+}
+
+# Keep commands that were run at least twice, one line per command (the latest one).
+# Lines appended by other shells while awk is running are carried over untouched.
+compact_eternal_history() {
+    local file=$BASH_ETERNAL_HISTORY lines tmp
+    [[ -f $file ]] || return 0
+    lines=$(wc -l < "$file") || return 1
+    tmp=$(mktemp "$file.XXXXXX") || return 1
+    awk -F'\t' -v lines="$lines" '
+        function cmd_text(field) { sub(/^ *[0-9]+ +/, "", field); return field }
+        FNR > lines { next }
+        NR == FNR { key = cmd_text($7); count[key]++; last[key] = FNR; next }
+        { key = cmd_text($7) }
+        count[key] >= 2 && last[key] == FNR
+    ' "$file" "$file" > "$tmp" \
+        && tail -n +"$((lines + 1))" "$file" >> "$tmp" \
+        && mv "$tmp" "$file" \
+        && echo "$lines -> $(wc -l < "$file") lines"
+}
 
 ## Define any user-specific variables you want here.
-source ~/.bashrc_custom
+[[ -f ~/.bash_functions ]] && source ~/.bash_functions
+[[ -f ~/.bashrc_custom ]] && source ~/.bashrc_custom

@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 ;;; this loads the package manager - disabled in favor of elpaca
 ;; (require 'package)
 

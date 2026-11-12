@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 ;; system-type definition
 (defun system-is-linux()
   (string-equal system-type "gnu/linux"))
@@ -7,15 +8,15 @@
   (string-equal system-type "cygwin"))
 
 ;;; elpaca
-(defvar elpaca-installer-version 0.11)
+(defvar elpaca-installer-version 0.12)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
-(defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
+(defvar elpaca-sources-directory (expand-file-name "sources/" elpaca-directory))
 (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
                               :ref nil :depth 1 :inherit ignore
                               :files (:defaults "elpaca-test.el" (:exclude "extensions"))
-                              :build (:not elpaca--activate-package)))
-(let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
+                              :build (:not elpaca-activate)))
+(let* ((repo  (expand-file-name "elpaca/" elpaca-sources-directory))
        (build (expand-file-name "elpaca/" elpaca-builds-directory))
        (order (cdr elpaca-order))
        (default-directory repo))
@@ -251,7 +252,7 @@
 (use-package secretaria
   :ensure t
   :init
-  (add-hook 'after-init-hook #'secretaria-unknown-time-always-remind-me)
+  (add-hook 'elpaca-after-init-hook #'secretaria-unknown-time-always-remind-me)
 
   ;; fix erroneous function
   (require 'secretaria)
@@ -277,18 +278,7 @@ those tasks have no time of the day specified"
 ;;; yasnippet
 (use-package yasnippet
   :ensure t
-  :init
-  (add-hook 'prog-mode-hook #'yas-minor-mode)
-  (add-hook 'org-mode-hook
-            (lambda ()
-              (yas-minor-mode)
-              (make-variable-buffer-local 'yas/trigger-key)
-              (setq yas/trigger-key [tab])
-              (add-to-list 'org-tab-first-hook 'yas/org-very-safe-expand)
-              (keymap-set yas/keymap "<tab>" 'yas/next-field)))
-  (defun yas/org-very-safe-expand ()
-    (let ((yas/fallback-behavior 'return-nil)) (yas/expand)))
-
+  :hook ((prog-mode org-mode) . yas-minor-mode)
   :config
   (yas-reload-all))
 
@@ -312,10 +302,11 @@ those tasks have no time of the day specified"
   :ensure t
   :defer t
   :init
-  (add-hook 'after-init-hook 'global-company-mode)
-  (add-hook 'after-init-hook 'company-quickhelp-mode)
+  (add-hook 'elpaca-after-init-hook 'global-company-mode)
+  (add-hook 'elpaca-after-init-hook 'company-quickhelp-mode)
   (setopt company-idle-delay 0.0)
   (setopt company-dabbrev-downcase nil)
+  (setopt company-tooltip-align-annotations t)
   (global-set-key [c-tab] #'company-complete) ; use c-tab as manual trigger
   (keymap-set evil-insert-state-map "C-SPC" 'company-complete))
 
@@ -367,8 +358,9 @@ those tasks have no time of the day specified"
   :defer t)
 
 ;;; clojure mode for org-babel
-(require 'ob-clojure)
-(setopt org-babel-clojure-backend 'cider)
+(with-eval-after-load 'org
+  (setopt org-babel-clojure-backend 'cider
+          org-babel-load-languages '((emacs-lisp . t) (clojure . t))))
 
 ;;; from mooc
 ;;; global settings
@@ -392,7 +384,7 @@ those tasks have no time of the day specified"
 (setopt vc-follow-symlinks t)
 ;; use spaces instead of tabs when indenting
 (setopt indent-tabs-mode nil)
-(setopt whitespace-style '(tabs spaces trailing lines space-before-tab newline indentation:space empty space-after-tab space-mark tab-mark newline-mark))
+(setopt whitespace-style '(tabs spaces trailing lines space-before-tab newline indentation::space empty space-after-tab space-mark tab-mark newline-mark))
 
 ;;; vertico
 (use-package vertico
@@ -464,29 +456,6 @@ those tasks have no time of the day specified"
 
 (use-package restclient
   :ensure t)
-
-;;; typescript
-(use-package flycheck
-  :ensure t)
-
-(use-package tide
-  :ensure t)
-
-(defun setup-tide-mode ()
-  (interactive)
-  (tide-setup)
-  (flycheck-mode +1)
-  (setopt flycheck-check-syntax-automatically '(save mode-enabled))
-  (eldoc-mode +1)
-  (tide-hl-identifier-mode +1)
-  (company-mode +1))
-
-;; aligns annotation to the right hand side
-(setopt company-tooltip-align-annotations t)
-
-(add-hook 'typescript-mode-hook #'setup-tide-mode)
-;; enable evil collection for tide
-(add-hook 'typescript-mode-hook 'evil-collection-tide-setup)
 
 ;;; custom mode for log viewing
 (define-derived-mode log4j-view-mode fundamental-mode

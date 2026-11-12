@@ -12,9 +12,7 @@
 .bash_local
 .bash_logout
 !.profile
-
-# mintty
-!.minttyrc
+!.inputrc
 
 # The gitignore of this repository itself (!)
 !.gitignore

@@ -22,6 +22,16 @@ set argtextobj
 set ideajoin
 set idearefactormode=keep
 
+" IDE Actions
+let mapleader = " "
+map <leader>r <Action>(RenameElement)
+map <leader>f <Action>(ReformatCode)
+map <leader>o <Action>(OptimizeImports)
+map <leader>e <Action>(ShowErrorDescription)
+map <leader>u <Action>(FindUsages)
+map gi <Action>(GotoImplementation)
+map <leader>a <Action>(GotoAction)
+
 " Handlers
 sethandler <S-Tab> a:vim
 sethandler <S-CR> a:vim

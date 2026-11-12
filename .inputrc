@@ -1,0 +1,21 @@
+# Readline settings. Loaded automatically by bash and other readline programs.
+
+# Default off: Tab completion ignores case, `cd dow<Tab>` finds Downloads
+set completion-ignore-case on
+
+# Default off: show all candidates on the first Tab instead of the second
+#set show-all-if-ambiguous on
+
+# Default off: color file names in completion lists the same way ls does
+set colored-stats on
+
+# Default off: highlight the prefix already typed in the completion list
+set colored-completion-prefix on
+
+# Default off: append / to completed symlinks that point to directories
+#set mark-symlinked-directories on
+
+# Default: Up/Down walk the history one entry at a time.
+# With these, they search the history for entries starting with the text already typed.
+"\e[A": history-search-backward
+"\e[B": history-search-forward
